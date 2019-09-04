@@ -1,0 +1,4 @@
+FROM_ADDR  = ""
+PW = ""
+SUBJECT =""
+TEST_EMAIL = ""

@@ -1,0 +1,3 @@
+Sync report/n
+{title}/n
+{number_of_files}  files synced/n
