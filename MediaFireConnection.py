@@ -1,14 +1,16 @@
 from mediafire import (MediaFireApi, MediaFireUploader)
 import properties
 import os
+import utils
 from pprint import pprint
-from mediafire.client import (MediaFireClient,
+from mediafire.client import (MediaFireClient,File,
                               Folder, ResourceNotFoundError)
 
+ROOT = 'mf:/A Mi cuccaink/Kepek/'
+files_done = []
 
 class MediaFireConnection:
-    def __init__(self, api=MediaFireApi(), email=properties.email, password=properties.password,
-                 app_id=properties.app_id):
+    def __init__(self, api=MediaFireApi(), email=properties.email, password=properties.password,app_id=properties.app_id):
         self.__api = api
         self.session = api.user_get_session_token(email=email,
                                                   password=password,
@@ -64,10 +66,24 @@ class MediaFireConnection:
 
         return True
 
+    def get_content(self, path):
+        for item in self.client.get_folder_contents_iter(path):
+            if type(item) is File:
+                return (path + '/' + item['filename']).replace(ROOT, "")
+                #print((path + '/' + item['filename']).replace(ROOT, ""))
+               # print("File: {}".format(item['filename']))
+            elif type(item) is Folder:
+               self.get_content(path + item['name'] +'/')
+              # print("Folder: {}".format(item['name']))
+
 
 def example():
     mf = MediaFireConnection()
-    pprint(mf.get_user_info())
+    files_done = mf.get_content(ROOT)
+    print("done")
+    utils.save_done("on_mf.txt")
+    for fn in mf_file_names:
+        print(fn)
 
 
 if __name__ == '__main__':

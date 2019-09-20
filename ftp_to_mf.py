@@ -10,11 +10,21 @@ from ftptool import FTPHost
 
 global files_done
 
-def main():
+
+
+def get_file_names_ftp():
+    filenames=[]
     ftp = FTPHost.connect(p.private_ftp, user=p.ftp_user, password=p.ftp_password)
     for (dirname, subdirs, files) in ftp.walk(FOLDER_PAIRS[0]['ftp']):
-        print(str(dirname).replace(FOLDER_PAIRS[0]['ftp'], ""), "==>", ", ".join(files))
-
+        for file in files:
+            filenames.append(str(dirname).replace(FOLDER_PAIRS[0]['ftp'], "") + '/' + file)
+            #print(str(dirname).replace(FOLDER_PAIRS[0]['ftp'], "") + '/' + file)
+        #print(subdirs)
+        #print(str(dirname).replace(FOLDER_PAIRS[0]['ftp'], ""), "==>", ", ".join(files))
+    return filenames
 
 if __name__ == '__main__':
-    main()
+    files_ftp = get_file_names_ftp()
+    print("done")
+    for fn in files_ftp:
+        print(fn)

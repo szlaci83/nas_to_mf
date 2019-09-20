@@ -10,10 +10,10 @@ MF_DIR = ''
 
 FOLDER_PAIRS = [
     {"ftp": "/HomeMade/Kepek/",
-     "mf": "Kepek"
+     "mf": "mf:/A Mi cuccaink/Kepek/"
      },
     {"ftp": "/HomeMade/Kamera/",
-     "mf": "Kamera"
+     "mf": "mf:/A Mi cuccaink/Kamera/"
      }
 ]
 
