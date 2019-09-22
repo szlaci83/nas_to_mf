@@ -1,13 +1,21 @@
 from mediafire import (MediaFireApi, MediaFireUploader)
 import properties
 import os
+import logging
 import utils
 from pprint import pprint
 from mediafire.client import (MediaFireClient,File,
                               Folder, ResourceNotFoundError)
 
-ROOT = 'mf:/A Mi cuccaink/Kepek/'
+
+ROOT = 'mf:/Kepek/'
 files_done = []
+
+def save_line(item):
+    with open("on_mf.txt", "a+") as f:
+        f.write(item + "\n")
+    f.close()
+
 
 class MediaFireConnection:
     def __init__(self, api=MediaFireApi(), email=properties.email, password=properties.password,app_id=properties.app_id):
@@ -67,26 +75,31 @@ class MediaFireConnection:
         return True
 
     def get_content(self, path):
-        for item in self.client.get_folder_contents_iter(path):
-            if type(item) is File:
-                return (path + '/' + item['filename']).replace(ROOT, "")
-                #print((path + '/' + item['filename']).replace(ROOT, ""))
-               # print("File: {}".format(item['filename']))
-            elif type(item) is Folder:
-               self.get_content(path + item['name'] +'/')
-              # print("Folder: {}".format(item['name']))
+        logging.info("Processing path: %s" % path)
+        try:
+            for item in self.client.get_folder_contents_iter(path):
+                if type(item) is File:
+                    file_path = (path + item['filename']).replace(ROOT, "")
+                    logging.info("Processsing file: %s" % file_path)
+                    save_line(file_path)
+                elif type(item) is Folder:
+                    self.get_content(path + item['name'] +'/')
+        except e:
+           logging.error("Error: %s",  exc_info=e)
+
 
 
 def example():
     mf = MediaFireConnection()
-    files_done = mf.get_content(ROOT)
+    mf.get_content(ROOT)
     print("done")
-    utils.save_done("on_mf.txt")
-    for fn in mf_file_names:
-        print(fn)
+    #utils.save_done("on_mf.txt")
+    #for fn in mf_file_names:
+    #    print(fn)
 
 
 if __name__ == '__main__':
+    logging.basicConfig(filename="", level=logging.INFO, format="%(asctime)s:%(levelname)s:%(message)s")
     example()
 
 
