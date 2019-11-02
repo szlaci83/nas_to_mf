@@ -7,6 +7,10 @@ import properties as p
 import sys
 import logging
 from ftptool import FTPHost, FTPFileProxy
+import shutil
+import urllib
+import urllib.request as request
+from contextlib import closing
 
 global files_done
 
@@ -46,11 +50,11 @@ def get_file_names_ftp(name):
 
 
 def get_mf_done_list(name):
-    return [ekezettelenit(f.replace("\n", "").split(',')[0]).lower() for f in read_file(name +"_on_mf.txt")]
+    return dict((ekezettelenit(f.replace("\n", "").split(',')[0]).lower(), f.replace("\n", "").split(',')[0]) for f in read_file(name +"_on_mf.txt"))
 
 
 def get_ftp_done_list(name):
-    return [ekezettelenit(correct(f.replace("\n", ""))).lower() for f in read_file(name + "_on_ftp.txt")]
+    return dict((ekezettelenit(correct(f.replace("\n", ""))).lower(), f.replace("\n", "")) for f in read_file(name + "_on_ftp.txt"))
 
 
 def diff():
@@ -62,24 +66,36 @@ def diff():
     #     print(i)
     # for i in done_mf:
     #     print(i)
-    to_download = [f for f in ftp if f not in mf and not f.startswith('vhs-rol') and not f.startswith('regi videok')]
-    ftp = FTPHost.connect(p.private_ftp, user=p.ftp_user, password=p.ftp_password)
+    to_download = [f for f in ftp.keys() if f not in mf.keys() and not f.startswith('vhs-r') and not f.startswith('r�gi vide�k') and not f.endswith('clpi')]
+    ftp_host = FTPHost.connect(p.private_ftp, user=p.ftp_user, password=p.ftp_password)
     for file_path in to_download:
-        path_from = FOLDER_PAIRS[1]['ftp']
-        file_from = os.path.split(file_path) [-1]
+        print(file_path)
+        file_path = ftp.get(file_path)
+        path_from = FOLDER_PAIRS[1]['ftp'] + file_path[:file_path.rfind('/')]
+        #file_from = os.path.split(file_path) [-1]
+        file_from=file_path[file_path.rfind('/')+1:]
         print(path_from)
+        print(file_path)
+
         print(file_from)
         print(os.getcwd())
         path_t = os.path.join(os.getcwd(), DESTINATION)
         print(path_t)
+        if os.name != 'posix':
+            path_from = path_from.replace("/", "\\")
         print(path_from.replace("/", "\\"))
-        path_to = path_t + path_from.replace("/", "\\")
+        path_to = path_t + path_from
         print(path_to)
         os.makedirs(path_to, exist_ok=True)
-        file_from = os.path.split(file_path)[-1]
+        #file_from = os.path.split(file_path)[-1]
 
-        f = FTPFileProxy(ftp.ftp_obj, os.path.join(path_from, file_from))
-        f.download_to_file(os.path.join(path_to, file_from))
+        print("FROM: " +  os.path.join(path_from, file_from))
+        print("TO: " + os.path.join(path_to, file_from)) 
+        #f = FTPFileProxy(ftp_host.ftp_obj, os.path.join(path_from, file_from))
+        #f.download_to_file(os.path.join(path_to, file_from))
+        with closing(request.urlopen('ftp://' + p.ftp_user + ':' + p.ftp_password +'@'  + p.private_ftp + "/" + urllib.parse.quote(os.path.join(path_from, file_from)))) as r:
+            with open(os.path.join(path_to, file_from), 'wb') as f:
+                shutil.copyfileobj(r, f)
 
     #    print(i)
 
