@@ -93,9 +93,13 @@ def diff():
         print("TO: " + os.path.join(path_to, file_from)) 
         #f = FTPFileProxy(ftp_host.ftp_obj, os.path.join(path_from, file_from))
         #f.download_to_file(os.path.join(path_to, file_from))
-        with closing(request.urlopen('ftp://' + p.ftp_user + ':' + p.ftp_password +'@'  + p.private_ftp + "/" + urllib.parse.quote(os.path.join(path_from, file_from)))) as r:
-            with open(os.path.join(path_to, file_from), 'wb') as f:
-                shutil.copyfileobj(r, f)
+        try:
+            with closing(request.urlopen('ftp://' + p.ftp_user + ':' + p.ftp_password +'@'  + p.private_ftp + "/" + urllib.parse.quote(os.path.join(path_from, file_from)))) as r:
+                with open(os.path.join(path_to, file_from), 'wb') as f:
+                    shutil.copyfileobj(r, f)
+        except urllib.error.URLError:
+            #logging.error(file_path)
+            print("ERROR: " + file_path) 
 
     #    print(i)
 
