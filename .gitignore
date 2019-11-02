@@ -3,6 +3,9 @@ properties.py
 email_properties.py
 .idea/workspace.xml
 
+*.txt
+*.txtdups
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

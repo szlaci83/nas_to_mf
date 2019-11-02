@@ -6,14 +6,21 @@ import utils
 from pprint import pprint
 from mediafire.client import (MediaFireClient,File,
                               Folder, ResourceNotFoundError)
+from settings import DONE_FILE, LOG_FILE, LOGGING_LEVEL, NOT_TO_SYNC, FOLDER_PAIRS
+
+Kepek = 0
+Kamera = 1
+
+FOLDER = Kamera
 
 
-ROOT = 'mf:/Kepek/'
+ROOT = 'mf:/' + FOLDER_PAIRS[FOLDER]['name']+'/'
 files_done = []
 
-def save_line(item):
-    with open("on_mf.txt", "a+") as f:
-        f.write(item + "\n")
+
+def save_line(*args):
+    with open(FOLDER_PAIRS[FOLDER]['name'] +"_on_mf.txt", "a+", encoding="utf-8") as f:
+        f.write(",".join(args) + '\n')
     f.close()
 
 
@@ -81,25 +88,30 @@ class MediaFireConnection:
                 if type(item) is File:
                     file_path = (path + item['filename']).replace(ROOT, "")
                     logging.info("Processsing file: %s" % file_path)
-                    save_line(file_path)
+                    save_line(file_path, item['hash'], item['size'])
                 elif type(item) is Folder:
                     self.get_content(path + item['name'] +'/')
-        except e:
+        except ResourceNotFoundError as rne:
+           logging.error("Resource NOT Found: %s", exc_info=rne)
+           return
+        except Exception as e:
            logging.error("Error: %s",  exc_info=e)
 
 
-
-def example():
+def save_file_list():
     mf = MediaFireConnection()
     mf.get_content(ROOT)
     print("done")
-    #utils.save_done("on_mf.txt")
-    #for fn in mf_file_names:
-    #    print(fn)
+
+
+def example2():
+    mf = MediaFireConnection()
+    for i in mf.client.get_folder_contents_iter(ROOT+ 'Zoe szuletes'):
+        pprint(i)
 
 
 if __name__ == '__main__':
     logging.basicConfig(filename="", level=logging.INFO, format="%(asctime)s:%(levelname)s:%(message)s")
-    example()
-
+    save_file_list()
+    #example2()
 
