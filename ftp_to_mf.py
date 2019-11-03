@@ -11,6 +11,7 @@ import shutil
 import urllib
 import urllib.request as request
 from contextlib import closing
+import logging
 
 global files_done
 
@@ -60,37 +61,43 @@ def get_ftp_done_list(name):
 def diff():
     ftp = get_ftp_done_list(FOLDER_PAIRS[1]['name'])
     mf = get_mf_done_list(FOLDER_PAIRS[1]['name'])
-    print(len(ftp))
-    print(len(mf))
+    #print(len(ftp))
+    logging.info("%d files on NAS (FTP)" % len(ftp))
+    logging.info("%d files on Mediafire" % len(mf))
+    #print(len(mf))
     # for i in done_ftp:
     #     print(i)
     # for i in done_mf:
     #     print(i)
     to_download = [f for f in ftp.keys() if f not in mf.keys() and not f.startswith('vhs-r') and not f.startswith('r�gi vide�k') and not f.endswith('clpi')]
+    #print(len(to_download))
+    logging.info("Copying %d files from NAS (FTP)" %len(to_download))
     ftp_host = FTPHost.connect(p.private_ftp, user=p.ftp_user, password=p.ftp_password)
     for file_path in to_download:
-        print(file_path)
+        #print(file_path)
         file_path = ftp.get(file_path)
         path_from = FOLDER_PAIRS[1]['ftp'] + file_path[:file_path.rfind('/')]
         #file_from = os.path.split(file_path) [-1]
         file_from=file_path[file_path.rfind('/')+1:]
-        print(path_from)
-        print(file_path)
+        #print(path_from)
+        #print(file_path)
 
-        print(file_from)
-        print(os.getcwd())
+        #print(file_from)
+        #print(os.getcwd())
         path_t = os.path.join(os.getcwd(), DESTINATION)
-        print(path_t)
+        #print(path_t)
         if os.name != 'posix':
             path_from = path_from.replace("/", "\\")
-        print(path_from.replace("/", "\\"))
+        #print(path_from.replace("/", "\\"))
         path_to = path_t + path_from
-        print(path_to)
+        #print(path_to)
         os.makedirs(path_to, exist_ok=True)
         #file_from = os.path.split(file_path)[-1]
 
-        print("FROM: " +  os.path.join(path_from, file_from))
-        print("TO: " + os.path.join(path_to, file_from)) 
+        #print("FROM: " +  os.path.join(path_from, file_from))
+        logging.info("FROM: %s" %  os.path.join(path_from, file_from))
+        #print("TO: " + os.path.join(path_to, file_from)) 
+        logging.info("TO: %s" %  os.path.join(path_to, file_from))
         #f = FTPFileProxy(ftp_host.ftp_obj, os.path.join(path_from, file_from))
         #f.download_to_file(os.path.join(path_to, file_from))
         try:
@@ -98,8 +105,9 @@ def diff():
                 with open(os.path.join(path_to, file_from), 'wb') as f:
                     shutil.copyfileobj(r, f)
         except urllib.error.URLError:
-            #logging.error(file_path)
-            print("ERROR: " + file_path) 
+            logging.error(file_path)
+        logging.info("%s DONE" % file_from)
+            #print("ERROR: " + file_path) 
 
     #    print(i)
 
@@ -107,6 +115,7 @@ def diff():
 
 
 if __name__ == '__main__':
+    logging.basicConfig(filename="xftp_to_mf.log", level=logging.INFO, format="%(asctime)s:%(levelname)s:%(message)s")
     #get_file_names_ftp("")
     diff()
     #ftp = get_ftp_done_list(FOLDER_PAIRS[1]['name'])
