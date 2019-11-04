@@ -56,7 +56,7 @@ class FtpConnection:
 def _example():
     ftp = FtpConnection(p.ftp_host, p.ftp_user, p.ftp_password)
     ftp.set_cwd("/Doksik")
-    #get_files(ftp, "/HomeMade/Kamera")
+    #get_files(ftp, "/Test/Kamera")
     up_file = open('/home/laszlo/test.txt', 'rb')
     down_file = open('/home/laszlo/test2.txt', 'wb')
     ftp.upload(ftp, "test.txt", up_file)

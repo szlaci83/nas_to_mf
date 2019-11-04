@@ -9,11 +9,11 @@ FTP_DIR = ''
 MF_DIR = ''
 
 FOLDER_PAIRS = [
-    {"ftp": "/HomeMade/Kepek/",
+    {"ftp": "/Test/Kepek/",
      "mf": "mf:/Kepek/",
      "name": 'Kepek'
      },
-    {"ftp": "/HomeMade/Kamera/",
+    {"ftp": "/Test/Kamera/",
      "mf": "mf:/Kamera/",
      "name": 'Kamera'
      }

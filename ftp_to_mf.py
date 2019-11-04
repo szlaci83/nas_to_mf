@@ -58,7 +58,7 @@ def get_ftp_done_list(name):
     return dict((ekezettelenit(correct(f.replace("\n", ""))).lower(), f.replace("\n", "")) for f in read_file(name + "_on_ftp.txt"))
 
 
-def diff():
+def get_from_ftp():
     ftp = get_ftp_done_list(FOLDER_PAIRS[1]['name'])
     mf = get_mf_done_list(FOLDER_PAIRS[1]['name'])
     #print(len(ftp))
@@ -76,9 +76,9 @@ def diff():
     for file_path in to_download:
         #print(file_path)
         file_path = ftp.get(file_path)
-        path_from = FOLDER_PAIRS[1]['ftp'] + file_path[:file_path.rfind('/')]
+        path_from = FOLDER_PAIRS[1]['ftp'] + file_path[:file_path.rfind(os.path.sep)]
         #file_from = os.path.split(file_path) [-1]
-        file_from=file_path[file_path.rfind('/')+1:]
+        file_from=file_path[file_path.rfind(os.path.sep)+1:]
         #print(path_from)
         #print(file_path)
 
@@ -112,12 +112,31 @@ def diff():
     #    print(i)
 
 
+def upload_to_Mf():
+    conn = MediaFireConnection()
+    cwd = os.getcwd()
+    path = os.path.join(cwd, DESTINATION)
+    for root, dirs, files in os.walk(path, topdown=True):
+        for name in files:
+            path = os.path.join(root, name)
+            print(root)
+            print(name)
+            mf_path = os.path.join(root.replace(cwd, "").replace(DESTINATION + os.path.sep, ""), name)
+            mf_path = mf_path[:mf_path.rfind(os.path.sep)]
+            mf_path = mf_path.replace("\\", "/")
+            to_path = conn.ROOT + mf_path
+            print(to_path)
+            # mf.upload_file("C:\\Users\\Laszlo.Szoboszlai\\Documents\personal\\git\\nas_to_mf\\", "mail_service.py", ROOT + "Test1/neww/neww2/nn", "Fppv99.py")
+            conn.upload_file(root, name, to_path, name)
+
+
+
 
 
 if __name__ == '__main__':
     logging.basicConfig(filename="xftp_to_mf.log", level=logging.INFO, format="%(asctime)s:%(levelname)s:%(message)s")
-    #get_file_names_ftp("")
-    diff()
+    #get_from_ftp()
+    upload_to_Mf()
     #ftp = get_ftp_done_list(FOLDER_PAIRS[1]['name'])
     #mf = get_mf_done_list(FOLDER_PAIRS[1]['name'])
 
