@@ -40,13 +40,13 @@ def get_file_names_ftp(name):
     ftp = FTPHost.connect(p.private_ftp, user=p.ftp_user, password=p.ftp_password)
     for (dirname, subdirs, files) in ftp.walk(name):
         for file in files:
-            print(file)
+            logging.debug("File: %s" % file)
             filepath = str(dirname).replace(name, "") + '/' + file
             save_line(filepath)
             filenames.append(filepath)
-            print(filepath)
-        #print(subdirs)
-        #print(str(dirname).replace(FOLDER_PAIRS[0]['ftp'], ""), "==>", ", ".join(files))
+            logging.debug("Filepath: %s" % filepath)
+        logging.debug("Subdirs: %s" % subdirs)
+        logging.debug(str(dirname).replace(FOLDER_PAIRS[0]['ftp'], ""), "==>", ", ".join(files))
     return filenames
 
 
@@ -61,43 +61,36 @@ def get_ftp_done_list(name):
 def get_from_ftp():
     ftp = get_ftp_done_list(FOLDER_PAIRS[1]['name'])
     mf = get_mf_done_list(FOLDER_PAIRS[1]['name'])
-    #print(len(ftp))
     logging.info("%d files on NAS (FTP)" % len(ftp))
     logging.info("%d files on Mediafire" % len(mf))
-    #print(len(mf))
-    # for i in done_ftp:
-    #     print(i)
-    # for i in done_mf:
-    #     print(i)
     to_download = [f for f in ftp.keys() if f not in mf.keys() and not f.startswith('vhs-r') and not f.startswith('r�gi vide�k') and not f.endswith('clpi')]
-    #print(len(to_download))
-    logging.info("Copying %d files from NAS (FTP)" %len(to_download))
-    ftp_host = FTPHost.connect(p.private_ftp, user=p.ftp_user, password=p.ftp_password)
-    for file_path in to_download:
-        #print(file_path)
-        file_path = ftp.get(file_path)
-        path_from = FOLDER_PAIRS[1]['ftp'] + file_path[:file_path.rfind(os.path.sep)]
-        #file_from = os.path.split(file_path) [-1]
-        file_from=file_path[file_path.rfind(os.path.sep)+1:]
-        #print(path_from)
-        #print(file_path)
+    logging.debug("%d to download" % len(to_download))
 
-        #print(file_from)
-        #print(os.getcwd())
+    #ftp_host = FTPHost.connect(p.private_ftp, user=p.ftp_user, password=p.ftp_password)
+    for file_path in to_download:
+        logging.debug("path:  %s" % file_path)
+        file_path = ftp.get(file_path)
+        logging.debug("file_path :  %s" % file_path)
+        path_from = FOLDER_PAIRS[1]['ftp'] + file_path[:file_path.rfind(os.path.sep)]
+        logging.debug("path_from :  %s" % path_from)
+        #file_from = os.path.split(file_path) [-1]
+        file_from = file_path[file_path.rfind(os.path.sep)+1:]
+        logging.debug("file_from :  %s" % file_from)
         path_t = os.path.join(os.getcwd(), DESTINATION)
-        #print(path_t)
+        logging.debug("path_t :  %s" % path_t)
+
         if os.name != 'posix':
+            logging.debug("replacing /")
             path_from = path_from.replace("/", "\\")
-        #print(path_from.replace("/", "\\"))
+
+        logging.debug("new path :  %s" % path_from)
+
         path_to = path_t + path_from
-        #print(path_to)
+        logging.debug("path_to :  %s" % path_to)
         os.makedirs(path_to, exist_ok=True)
         #file_from = os.path.split(file_path)[-1]
-
-        #print("FROM: " +  os.path.join(path_from, file_from))
-        logging.info("FROM: %s" %  os.path.join(path_from, file_from))
-        #print("TO: " + os.path.join(path_to, file_from)) 
-        logging.info("TO: %s" %  os.path.join(path_to, file_from))
+        logging.info("FROM: %s" % os.path.join(path_from, file_from))
+        logging.info("TO: %s" % os.path.join(path_to, file_from))
         #f = FTPFileProxy(ftp_host.ftp_obj, os.path.join(path_from, file_from))
         #f.download_to_file(os.path.join(path_to, file_from))
         try:
@@ -107,9 +100,6 @@ def get_from_ftp():
         except urllib.error.URLError:
             logging.error(file_path)
         logging.info("%s DONE" % file_from)
-            #print("ERROR: " + file_path) 
-
-    #    print(i)
 
 
 def upload_to_Mf():
@@ -118,14 +108,15 @@ def upload_to_Mf():
     path = os.path.join(cwd, DESTINATION)
     for root, dirs, files in os.walk(path, topdown=True):
         for name in files:
+            logging.debug("root:  %s" % root)
+            logging.debug("name:  %s" % name)
             path = os.path.join(root, name)
-            print(root)
-            print(name)
+
             mf_path = os.path.join(root.replace(cwd, "").replace(DESTINATION + os.path.sep, ""), name)
             mf_path = mf_path[:mf_path.rfind(os.path.sep)]
             mf_path = mf_path.replace("\\", "/")
             to_path = conn.ROOT + mf_path
-            print(to_path)
+            logging.debug("to_path:  %s" % to_path)
             # mf.upload_file("C:\\Users\\Laszlo.Szoboszlai\\Documents\personal\\git\\nas_to_mf\\", "mail_service.py", ROOT + "Test1/neww/neww2/nn", "Fppv99.py")
             conn.upload_file(root, name, to_path, name)
 
@@ -134,7 +125,7 @@ def upload_to_Mf():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename="xftp_to_mf.log", level=logging.INFO, format="%(asctime)s:%(levelname)s:%(message)s")
+    logging.basicConfig(filename="", level=logging.INFO, format="%(asctime)s:%(levelname)s:%(message)s")
     #get_from_ftp()
     upload_to_Mf()
     #ftp = get_ftp_done_list(FOLDER_PAIRS[1]['name'])

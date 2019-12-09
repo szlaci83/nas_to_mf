@@ -1,2 +1,2 @@
-mediafire
+-e git+http://github.com/szlaci83/mediafire-python-open-sdk.git@v1.5_api#egg=mediafire
 ftptool
