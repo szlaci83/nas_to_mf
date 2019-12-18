@@ -1,5 +1,13 @@
 import os
 
+def correct(line):
+    return line.replace('Ã¼', 'u').replace('Å', 'o').replace('Ã©', 'e').replace('Ã³','o').replace('Ã­','i').replace('Ã¡', 'a').replace('Å±','u').replace('Å?', 'o')
+
+
+def ekezettelenit(line):
+    return line.replace('ü', 'u').replace('ő', 'o').replace('é', 'e').replace('ó', 'o').replace('í', 'i').replace('á','a')
+
+
 
 def load_done(done_file, path=None):
     global files_done

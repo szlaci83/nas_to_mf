@@ -1,139 +1,122 @@
 #!/usr/bin/env python
 import os
-from settings import DONE_FILE, LOG_FILE, LOGGING_LEVEL, NOT_TO_SYNC, FOLDER_PAIRS
-from MediaFireConnection import MediaFireConnection
-from FtpConnection import FtpConnection
+from settings import  LOGGING_LEVEL, NOT_TO_SYNC, FOLDER_PAIRS,DESTINATION, DESTINATION_FULL
+import MediaFireConnection as mf
 import properties as p
-import sys
 import logging
-from ftptool import FTPHost, FTPFileProxy
+from ftptool import FTPHost
 import shutil
 import urllib
 import urllib.request as request
 from contextlib import closing
 import logging
+from utils import ekezettelenit, correct
+from db_handler import MongoUtils
 
-global files_done
+mongo = MongoUtils()
 
-DESTINATION = 'downloads'
+# TODO: create a class with mf and  mondgo instances and move mf_filelist_to_mongo() from Mfconnection.py
+def get_file_names_ftp(ftp_root,db, coll_name):
+    col = db[coll_name]
 
-def save_line(*args):
-    with open(FOLDER_PAIRS[1]['name'] +"_on_ftp.txt", "a+",  errors='replace') as f:
-        f.write(",".join(args) + '\n')
-
-
-def read_file(filename):
-    with open(filename, "r",  errors='replace') as f:
-        return f.readlines()
-
-
-def correct(line):
-    return line.replace('Ã¼', 'u').replace('Å', 'o').replace('Ã©', 'e').replace('Ã³','o').replace('Ã­','i').replace('Ã¡', 'a').replace('Å±','u').replace('Å?', 'o')
-
-
-def ekezettelenit(line):
-    return line.replace('ü', 'u').replace('ő', 'o').replace('é', 'e').replace('ó', 'o').replace('í', 'i').replace('á','a')
-
-
-def get_file_names_ftp(name):
-    filenames=[]
     ftp = FTPHost.connect(p.private_ftp, user=p.ftp_user, password=p.ftp_password)
-    for (dirname, subdirs, files) in ftp.walk(name):
+    for (dirname, subdirs, files) in ftp.walk(ftp_root):
         for file in files:
             logging.debug("File: %s" % file)
-            filepath = str(dirname).replace(name, "") + '/' + file
-            save_line(filepath)
-            filenames.append(filepath)
-            logging.debug("Filepath: %s" % filepath)
+            file_path = (str(dirname) + '/' + file)
+            corrected_filepath = correct(ekezettelenit(file_path).replace("//", "/"))
+            existing = mongo.find_by_ftp_path(corrected_filepath, coll_name=coll_name)
+            item = {'ftp_path': corrected_filepath, 'original_ftp_path': file_path}
+            if existing:
+                logging.debug("updating Mongo")
+                mongo.update_item(coll_name=coll_name, item=existing, properties=item)
+            else:
+                logging.debug("inserting into Mongo")
+                mongo.insert_one(item, coll_name=coll_name)
+            logging.debug("Added: %s" % item)
         logging.debug("Subdirs: %s" % subdirs)
-        logging.debug(str(dirname).replace(FOLDER_PAIRS[0]['ftp'], ""), "==>", ", ".join(files))
-    return filenames
-
-
-def get_mf_done_list(name):
-    return dict((ekezettelenit(f.replace("\n", "").split(',')[0]).lower(), f.replace("\n", "").split(',')[0]) for f in read_file(name +"_on_mf.txt"))
-
-
-def get_ftp_done_list(name):
-    return dict((ekezettelenit(correct(f.replace("\n", ""))).lower(), f.replace("\n", "")) for f in read_file(name + "_on_ftp.txt"))
-
-
-def get_from_ftp():
-    ftp = get_ftp_done_list(FOLDER_PAIRS[1]['name'])
-    mf = get_mf_done_list(FOLDER_PAIRS[1]['name'])
-    logging.info("%d files on NAS (FTP)" % len(ftp))
-    logging.info("%d files on Mediafire" % len(mf))
-    to_download = [f for f in ftp.keys() if f not in mf.keys() and not f.startswith('vhs-r') and not f.startswith('r�gi vide�k') and not f.endswith('clpi')]
-    logging.debug("%d to download" % len(to_download))
-
-    #ftp_host = FTPHost.connect(p.private_ftp, user=p.ftp_user, password=p.ftp_password)
-    for file_path in to_download:
-        logging.debug("path:  %s" % file_path)
-        file_path = ftp.get(file_path)
-        logging.debug("file_path :  %s" % file_path)
-        path_from = FOLDER_PAIRS[1]['ftp'] + file_path[:file_path.rfind(os.path.sep)]
-        logging.debug("path_from :  %s" % path_from)
-        #file_from = os.path.split(file_path) [-1]
-        file_from = file_path[file_path.rfind(os.path.sep)+1:]
-        logging.debug("file_from :  %s" % file_from)
-        path_t = os.path.join(os.getcwd(), DESTINATION)
-        logging.debug("path_t :  %s" % path_t)
-
-        if os.name != 'posix':
-            logging.debug("replacing /")
-            path_from = path_from.replace("/", "\\")
-
-        logging.debug("new path :  %s" % path_from)
-
-        path_to = path_t + path_from
-        logging.debug("path_to :  %s" % path_to)
-        os.makedirs(path_to, exist_ok=True)
-        #file_from = os.path.split(file_path)[-1]
-        logging.info("FROM: %s" % os.path.join(path_from, file_from))
-        logging.info("TO: %s" % os.path.join(path_to, file_from))
-        #f = FTPFileProxy(ftp_host.ftp_obj, os.path.join(path_from, file_from))
-        #f.download_to_file(os.path.join(path_to, file_from))
-        try:
-            with closing(request.urlopen('ftp://' + p.ftp_user + ':' + p.ftp_password +'@'  + p.private_ftp + "/" + urllib.parse.quote(os.path.join(path_from, file_from)))) as r:
-                with open(os.path.join(path_to, file_from), 'wb') as f:
-                    shutil.copyfileobj(r, f)
-        except urllib.error.URLError:
-            logging.error(file_path)
-        logging.info("%s DONE" % file_from)
-
-
-def upload_to_Mf():
-    conn = MediaFireConnection()
-    cwd = os.getcwd()
-    path = os.path.join(cwd, DESTINATION)
-    for root, dirs, files in os.walk(path, topdown=True):
-        for name in files:
-            logging.debug("root:  %s" % root)
-            logging.debug("name:  %s" % name)
-            path = os.path.join(root, name)
-
-            mf_path = os.path.join(root.replace(cwd, "").replace(DESTINATION + os.path.sep, ""), name)
-            mf_path = mf_path[:mf_path.rfind(os.path.sep)]
-            mf_path = mf_path.replace("\\", "/")
-            to_path = conn.ROOT + mf_path
-            logging.debug("to_path:  %s" % to_path)
-            # mf.upload_file("C:\\Users\\Laszlo.Szoboszlai\\Documents\personal\\git\\nas_to_mf\\", "mail_service.py", ROOT + "Test1/neww/neww2/nn", "Fppv99.py")
-            conn.upload_file(root, name, to_path, name)
+    return
 
 
 
+#TODO: Thumbs.db-t kihagyni
+def get_one_from_ftp(item, to_path=os.path.join(os.getcwd(), DESTINATION)):
+    logging.debug(item["_id"])
+    from_path = item['original_ftp_path']
+    logging.debug("path_from :  %s" % from_path)
+    path_to = from_path.replace(item['ftp_root'], to_path)
+    if os.name != 'posix':
+        logging.debug("replacing /")
+        path_to = path_to.replace("/", "\\")
+    logging.debug("path_to :  %s" % path_to)
+    os.makedirs(os.path.dirname(path_to), exist_ok=True)
+    try:
+        with closing(request.urlopen(
+                'ftp://' + p.ftp_user + ':' + p.ftp_password + '@' + p.private_ftp + "/" + urllib.parse.quote(
+                        from_path))) as source:
+            with open(path_to, 'wb') as dest:
+                shutil.copyfileobj(source, dest)
+    except urllib.error.URLError:
+        logging.error(from_path)
+        return False
+    logging.info("%s DONE" % from_path)
+    return path_to
+
+
+def upload_file_to_mf(file_path):
+    print(file_path)
+    Kepek = FOLDER_PAIRS[0]['name']
+    root = os.path.dirname(file_path)
+    name = os.path.basename(file_path)
+    mf_path = os.path.join(Kepek, root.replace(DESTINATION_FULL, ""))
+    # mf_path = mf_path[:mf_path.rfind(os.path.sep)]
+    mf_path = mf_path.replace("\\", "/")
+    conn = mf.MediaFireConnection()
+    to_path = "/" + mf_path
+    logging.debug("MF______to_path:  %s" % to_path)
+    # logging.debug(root, urllib.parse.quote(name), to_path, urllib.parse.quote(name))
+
+    print("------------------------------------------")
+    print(root)
+    print(name)
+    print(to_path)
+    print(urllib.parse.quote(name))
+    print("------------------------------------------")
+
+    result = conn.upload_file(root, name, to_path, urllib.parse.quote(name))
+    result["path"] = "mf:" + to_path
+    return result
+
+def ftp_filelist_to_mongo():
+    for folder_pair in FOLDER_PAIRS:
+        get_file_names_ftp(mongo.db, folder_pair['ftp'], folder_pair['Name'])
+
+
+def process_all_coll_missing_in_mf(force_download=False, keep_downloaded=True):
+    for folder_pair in FOLDER_PAIRS:
+        process_missing_in_mf(folder_pair['name'], force_download, keep_downloaded)
+
+
+def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
+    coll = MongoUtils(coll)
+    for missing in coll.missing_from_mf():
+        if not any(missing['ftp_path'].endswith(i) for i in NOT_TO_SYNC):
+            local_path =missing.get('local_path', None)
+            if not local_path or force_download:
+                local_path = get_one_from_ftp(missing)
+                if local_path and keep_downloaded:
+                    coll.update_item(missing, {"local_path": local_path})
+            mf = upload_file_to_mf(local_path)
+            print(mf)
+            coll.update_item(missing, {"mf": mf})
+
+def main():
+    # TODO: fill rootpaths (call db_handler method?)
+    #ftp_filelist_to_mongo()
+    #mf.mf_filelist_to_mongo()
+    process_missing_in_mf(FOLDER_PAIRS[0]['name'], force_download=True)
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename="", level=logging.INFO, format="%(asctime)s:%(levelname)s:%(message)s")
-    #get_from_ftp()
-    upload_to_Mf()
-    #ftp = get_ftp_done_list(FOLDER_PAIRS[1]['name'])
-    #mf = get_mf_done_list(FOLDER_PAIRS[1]['name'])
-
-    #for i in mf:
-    #    print(i)
-    #files_ftp = get_file_names_ftp(FOLDER_PAIRS[1]['ftp'])
-    #print("done")
-    #for fn in files_ftp:
-    #    print(fn)
+    logging.basicConfig(filename="", level=logging.DEBUG, format="%(asctime)s:%(levelname)s:%(message)s")
+    main()

@@ -1,30 +1,14 @@
 from mediafire import (MediaFireApi, MediaFireUploader)
-from mediafire.client import ResourceNotFoundError
 import properties
 import os
 import logging
-import utils
-from pprint import pprint
 from mediafire.client import (MediaFireClient,File,
                               Folder, ResourceNotFoundError)
-from settings import DONE_FILE, LOG_FILE, LOGGING_LEVEL, NOT_TO_SYNC, FOLDER_PAIRS
+from settings import  LOGGING_LEVEL, FOLDER_PAIRS, DATABASE_NAME
+from utils import ekezettelenit
+from db_handler import MongoUtils
 
-Kepek = 0
-Kamera = 1
-
-FOLDER = Kamera
-
-
-ROOT = 'mf:/' + FOLDER_PAIRS[FOLDER]['name']+'/'
-
-
-files_done = []
-
-
-def save_line(*args):
-    with open(FOLDER_PAIRS[FOLDER]['name'] +"_on_mf.txt", "a+", encoding="utf-8") as f:
-        f.write(",".join(args) + '\n')
-    f.close()
+ROOT = 'mf:/'
 
 
 class MediaFireConnection:
@@ -62,6 +46,7 @@ class MediaFireConnection:
             except ResourceNotFoundError:
                 logging.info("%s path not found, lets create it." % target_path)
                 self.client.create_folder(target_path, recursive=True)
+        result = self.client.get_resource_by_key(result.quickkey)
         return result
 
     def do_ls(self, client, args):
@@ -88,43 +73,49 @@ class MediaFireConnection:
 
         return True
 
-    def get_content(self, path):
+    def to_mongo(self, db, folder_pair):
+        path = folder_pair['mf']
+        ftp_root = folder_pair['ftp']
+        coll_name = folder_pair['name']
+
         logging.info("Processing path: %s" % path)
         try:
             for item in self.client.get_folder_contents_iter(path):
                 if type(item) is File:
-                    file_path = (path + item['filename']).replace(ROOT, "")
-                    logging.info("Processsing file: %s" % file_path)
-                    save_line(file_path, item['hash'], item['size'])
+                    mf_path = (path + item['filename'])
+                    ftp_path = (ftp_root + item['filename'])
+                    logging.debug("Checking in Mongo for %s  ==>  %s" % (mf_path, ftp_path))
+                    existing = db.find_by_ftp_path(ftp_path, coll_name=coll_name)
+                    if existing:
+                        logging.debug("updating Mongo")
+                        item['path'] = path
+                        db.update_item(existing, properties={"mf": item}, coll_name=coll_name)
+                    else:
+                        logging.debug("inserting into Mongo")
+                        item['path'] = path
+                        db.insert_one({"mf": item}, coll_name=coll_name)
                 elif type(item) is Folder:
-                    self.get_content(path + item['name'] +'/')
+                    self.to_mongo(db, {
+                        "mf": path + item['name'] + '/',
+                        "ftp": folder_pair['ftp'] + item['name'] + '/',
+                        "name": coll_name
+                    })
         except ResourceNotFoundError as rne:
-           logging.error("Resource NOT Found: %s", exc_info=rne)
-           return
+            logging.error("Resource NOT Found: %s", exc_info=rne)
+            return
         except Exception as e:
-           logging.error("Error: %s",  exc_info=e)
+            logging.error("Error: %s", exc_info=e)
 
 
-def save_file_list():
-    mf = MediaFireConnection()
-    mf.get_content(ROOT)
-    print("done")
 
+def mf_filelist_to_mongo():
+    for folder_pair in FOLDER_PAIRS:
+        mongo = MongoUtils()
+        mf = MediaFireConnection()
+        mf.to_mongo(mongo, folder_pair=folder_pair)
 
-def example2():
-    mf = MediaFireConnection()
-    for i in mf.client.get_folder_contents_iter(ROOT):
-        pprint(i)
-
-def ex3():
-    mf = MediaFireConnection()
-    #mf.client.create_folder(ROOT + "Test1/neww/neww2/", recursive=True)
-    # mediafire.client.ResourceNotFoundError
-    print(mf.upload_file("C:\\Users\\Laszlo.Szoboszlai\\Documents\personal\\git\\nas_to_mf\\", "mail_service.py", ROOT + "Test1/neww/neww2/nn/nnl/ll/kll", "Fppv99.py"))
 
 if __name__ == '__main__':
-    logging.basicConfig(filename="", level=logging.INFO, format="%(asctime)s:%(levelname)s:%(message)s")
-    ex3()
-    #save_file_list()
-    #example2()
+    logging.basicConfig(filename="", level=logging.DEBUG, format="%(asctime)s:%(levelname)s:%(message)s")
+    mf_filelist_to_mongo()
 

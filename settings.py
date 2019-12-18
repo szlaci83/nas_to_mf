@@ -1,22 +1,33 @@
 import logging
+import os
 
-DONE_FILE = 'uploaded.mf'
-LOG_FILE = 'mf_sync.log'
-NOT_TO_SYNC = [DONE_FILE, LOG_FILE]
+NOT_TO_SYNC = ["Thumbs.db"]
+
+DATABASE_HOST = "192.168.0.150"
+DATABASE_NAME = "sync"
+
+LOCAL_ROOT = "C:\\Users\\Laszlo.Szoboszlai\\Documents\\personal\\git\\nas_to_mf\\"
+DESTINATION = 'downloads\\'
+DESTINATION_FULL = os.path.join(LOCAL_ROOT, DESTINATION)
+Kepek = "Kepek"
 
 LOGGING_LEVEL = logging.DEBUG
 FTP_DIR = ''
 MF_DIR = ''
 
 FOLDER_PAIRS = [
-    {"ftp": "/Test/Kepek/",
+    {"ftp": "/HomeMade/Kepek/",
      "mf": "mf:/Kepek/",
+     "local": 'C:\\temp\\',
      "name": 'Kepek'
      },
-    {"ftp": "/Test/Kamera/",
+    {"ftp": "/HomeMade/Kamera/",
      "mf": "mf:/Kamera/",
+     "local": 'C:\\temp\\',
      "name": 'Kamera'
      }
 ]
 
 
+if __name__ == '__main__':
+    print(locals())
