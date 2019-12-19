@@ -1,2 +1,7 @@
--e git+http://github.com/szlaci83/mediafire-python-open-sdk.git@v1.5_api#egg=mediafire
-ftptool
+ftptool==0.7.1
+-e git+http://github.com/szlaci83/mediafire-python-open-sdk.git@d5f1d7d89ce0a53a5c2ce0728b9f689ba402e8cb#egg=mediafire
+pymongo==3.10.0
+requests==2.11.1
+requests-toolbelt==0.9.1
+six==1.12.0
+Unidecode==1.1.1
