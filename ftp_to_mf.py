@@ -100,17 +100,21 @@ def process_all_coll_missing_in_mf(force_download=False, keep_downloaded=True):
 def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
     coll = MongoUtils(coll)
     cursor = coll.missing_from_mf()
-    for missing in cursor:
-        if not any(missing['ftp_path'].endswith(i) for i in NOT_TO_SYNC):
-            local_path =missing.get('local_path', None)
-            if not local_path or force_download:
-                local_path = get_one_from_ftp(missing)
-                if local_path and keep_downloaded:
-                    coll.update_item(missing, {"local_path": local_path})
-            mf = upload_file_to_mf(local_path)
-            print(mf)
-            coll.update_item(missing, {"mf": mf})
-    cursor.close()
+    try:
+        for missing in cursor:
+            if not any(missing['ftp_path'].endswith(i) for i in NOT_TO_SYNC):
+                local_path =missing.get('local_path', None)
+                if not local_path or force_download:
+                    local_path = get_one_from_ftp(missing)
+                    if local_path and keep_downloaded:
+                        coll.update_item(missing, {"local_path": local_path})
+                mf = upload_file_to_mf(local_path)
+                print(mf)
+                coll.update_item(missing, {"mf": mf})
+    except Exception as e:
+        logging.error(e)
+    finally:
+        cursor.close()
 
 def main():
     # TODO: fill rootpaths (call db_handler method?)
