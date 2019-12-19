@@ -52,7 +52,7 @@ class MongoUtils:
 
     def missing_from_mf(self, coll_name=None):
         coll = coll_name or self.coll
-        return self.db[coll].find({"mf": {"$eq": None}, "ftp_path": {"$ne": None}})
+        return self.db[coll].find({"mf": {"$eq": None}, "ftp_path": {"$ne": None}}, no_cursor_timeout=True)
 
     def update_item(self, item, properties, coll_name=None):
         coll = coll_name or self.coll
