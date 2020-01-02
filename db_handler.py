@@ -78,10 +78,6 @@ class MongoUtils:
 if __name__ == '__main__':
     # TODO: get name from param
     m = MongoUtils("Kepek")
-<<<<<<< HEAD
-    for i in m.db[m.coll].find():
-        m.add_root_paths(i, FOLDER_PAIRS[0])
-=======
     print("Using host: %s, db: %s, collection: %s" % (m.host,  m.db_name, m.coll))
     print("Missing from Mediafire: %d " % m.missing_from_mf())
     print("Missing from NAS: %d " % m.missing_from_ftp())
@@ -89,5 +85,5 @@ if __name__ == '__main__':
 
 
     # for i in m.db.find():
+
     #     m.add_root_paths(i, FOLDER_PAIRS[0])
->>>>>>> feature_ftp_download
