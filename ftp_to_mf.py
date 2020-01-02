@@ -26,7 +26,7 @@ def get_file_names_ftp(ftp_root, coll_name):
             file_path = (str(dirname) + '/' + file)
             corrected_filepath = correct(ekezettelenit(file_path).replace("//", "/"))
             existing = mongo.find_by_ftp_path(corrected_filepath, coll_name=coll_name)
-            item = {'ftp_path': corrected_filepath, 'original_ftp_path': file_path}
+            item = {'ftp_path': corrected_filepath, 'original_ftp_path': file_path, 'ftp_root': ftp_root}
             if existing:
                 logging.debug("updating Mongo")
                 mongo.update_item(coll_name=coll_name, item=existing, properties=item)
@@ -125,10 +125,11 @@ def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
 # 2019-12-19 20:03:19,702:ERROR:100: Internal server error (1002)
 def main():
     # TODO: fill rootpaths (call db_handler method?)
-    #ftp_filelist_to_mongo()
+    ftp_filelist_to_mongo()
     #mf.mf_filelist_to_mongo()
     # TODO: set ftp root mf root in mongo here
     process_missing_in_mf(FOLDER_PAIRS[0]['name'], force_download=True)
+
 
 
 if __name__ == '__main__':

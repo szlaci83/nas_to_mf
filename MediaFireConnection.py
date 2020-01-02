@@ -89,6 +89,7 @@ class MediaFireConnection:
                     if existing:
                         logging.debug("updating Mongo")
                         item['path'] = path
+                        item["mf_root"] = folder_pair['mf']
                         db.update_item(existing, properties={"mf": item}, coll_name=coll_name)
                     else:
                         logging.debug("inserting into Mongo")
@@ -105,7 +106,6 @@ class MediaFireConnection:
             return
         except Exception as e:
             logging.error("Error: %s", exc_info=e)
-
 
 
 def mf_filelist_to_mongo():
