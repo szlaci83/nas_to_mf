@@ -3,6 +3,7 @@ downloads/
 properties.py
 email_properties.py
 .idea/workspace.xml
+nohup.out
 
 *.txt
 *.txtdups

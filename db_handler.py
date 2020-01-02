@@ -1,5 +1,5 @@
 from utils import ekezettelenit, correct
-from settings import DATABASE_NAME, DATABASE_HOST
+from settings import DATABASE_NAME, DATABASE_HOST, FOLDER_PAIRS
 import pymongo
 
 
@@ -73,5 +73,5 @@ class MongoUtils:
 
 if __name__ == '__main__':
     m = MongoUtils("Kepek")
-    for i in m.missing_from_mf():
-        print(i)
+    for i in m.db[m.coll].find():
+        m.add_root_paths(i, FOLDER_PAIRS[0])

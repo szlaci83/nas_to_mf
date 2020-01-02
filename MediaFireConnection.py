@@ -109,6 +109,7 @@ class MediaFireConnection:
 
 
 def mf_filelist_to_mongo():
+    logging.info("getting mediafire filelist to mongo.")
     for folder_pair in FOLDER_PAIRS:
         mongo = MongoUtils()
         mf = MediaFireConnection()
