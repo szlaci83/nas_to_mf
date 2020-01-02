@@ -79,8 +79,8 @@ if __name__ == '__main__':
     # TODO: get name from param
     m = MongoUtils("Kepek")
     print("Using host: %s, db: %s, collection: %s" % (m.host,  m.db_name, m.coll))
-    print("Missing from Mediafire: %d " % m.missing_from_mf())
-    print("Missing from NAS: %d " % m.missing_from_ftp())
+    print("Missing from Mediafire: %d " % m.missing_from_mf()[0])
+    print("Missing from NAS: %d " % m.missing_from_ftp()[0])
     # TODO : missing from local, total ..
 
 

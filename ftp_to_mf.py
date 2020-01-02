@@ -35,9 +35,8 @@ def get_file_names_ftp(ftp_root, coll_name):
                 mongo.insert_one(item, coll_name=coll_name)
             logging.debug("Added: %s" % item)
         logging.debug("Subdirs: %s" % subdirs)
-        logging.info("%s done." % file)
+        logging.info("%s done." % dirname)
     return
-
 
 
 #TODO: Thumbs.db-t kihagyni
