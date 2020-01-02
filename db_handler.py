@@ -87,6 +87,5 @@ if __name__ == '__main__':
     for i in list(m.missing_from_mf()):
         p(i)
 
-    # for i in m.db.find():
-
-    #     m.add_root_paths(i, FOLDER_PAIRS[0])
+    for i in m.db['Kepek'].find():
+        m.add_root_paths(i, FOLDER_PAIRS[0])
