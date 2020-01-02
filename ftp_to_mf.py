@@ -65,8 +65,11 @@ def get_one_from_ftp(item, to_path=os.path.join(os.getcwd(), DESTINATION)):
     return path_to
 
 
+def upload_file_to_mf_win(file_path):
+    print(file_path)
+
 def upload_file_to_mf(file_path):
-   # print(file_path)
+    print(file_path)
     Kepek = FOLDER_PAIRS[0]['name']
     root = os.path.dirname(file_path)
     name = os.path.basename(file_path)
@@ -88,7 +91,7 @@ def upload_file_to_mf(file_path):
    # print("------------------------------------------")
     logging.info("%s : %s => %s" % (name, root, to_path))
     result = conn.upload_file(root, name, to_path, name)
-    loggint.info("%s copied" % name)
+    logging.info("%s copied" % name)
     result["path"] = "mf:/" + to_path
     return result
 
@@ -106,7 +109,6 @@ def process_all_coll_missing_in_mf(force_download=False, keep_downloaded=True):
 def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
     coll = MongoUtils(coll)
     cursor = list(coll.missing_from_mf())
-   # try:
     for missing in cursor:
         try:
             if not any(missing['ftp_path'].endswith(i) for i in NOT_TO_SYNC):
@@ -115,12 +117,13 @@ def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
                     local_path = get_one_from_ftp(missing)
                     if local_path and keep_downloaded:
                         coll.update_item(missing, {"local_path": local_path})
-                mf = upload_file_to_mf(local_path)
+                mf = upload_file_to_mf_win(local_path)
                 print(mf)
                 coll.update_item(missing, {"mf": mf})
         except Exception as e:
             logging.error(e)
 
+# 2019-12-19 20:03:19,702:ERROR:100: Internal server error (1002)
 def main():
     # TODO: fill rootpaths (call db_handler method?)
     #ftp_filelist_to_mongo()
