@@ -68,7 +68,7 @@ def upload_file_to_mf_win(file_path):
     print(file_path)
 
 def upload_file_to_mf(file_path):
-    print(file_path)
+   # print(file_path)
     Kepek = FOLDER_PAIRS[0]['name']
     root = os.path.dirname(file_path)
     name = os.path.basename(file_path)
@@ -108,6 +108,7 @@ def process_all_coll_missing_in_mf(force_download=False, keep_downloaded=True):
 def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
     coll = MongoUtils(coll)
     cursor = list(coll.missing_from_mf())
+   # try:
     for missing in cursor:
         try:
             if not any(missing['ftp_path'].endswith(i) for i in NOT_TO_SYNC):
