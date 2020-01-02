@@ -1,12 +1,13 @@
 from utils import ekezettelenit, correct
-from settings import DATABASE_NAME, DATABASE_HOST
+from settings import DATABASE_NAME, DATABASE_HOST, FOLDER_PAIRS
 import pymongo
 
 
 class MongoDB:
     class __impl:
         def __init__(self):
-            self.connection = pymongo.MongoClient(DATABASE_HOST)
+            self.host = DATABASE_HOST
+            self.connection = pymongo.MongoClient(self.host)
 
         def get_singleton_id(self):
             """ Just an example method that returns Singleton instance's ID """
@@ -26,8 +27,10 @@ class MongoDB:
 
 class MongoUtils:
     def __init__(self, coll_name="", db_name=DATABASE_NAME):
+        self.host = MongoDB().host
+        self.db_name = db_name
         self.conn = MongoDB().connection
-        self.db = self.conn[db_name]
+        self.db = self.conn[self.db_name]
         self.coll = coll_name
 
     def add_root_paths(self, item, folder_pair,  coll_name=None):
@@ -71,7 +74,15 @@ class MongoUtils:
         coll = coll_name or self.coll
         self.db[coll].insert_one(record)
 
+
 if __name__ == '__main__':
+    # TODO: get name from param
     m = MongoUtils("Kepek")
-    for i in m.missing_from_mf():
-        print(i)
+    print("Using host: %s, db: %s, collection: %s" % (m.host,  m.db_name, m.coll))
+    print("Missing from Mediafire: %d " % m.missing_from_mf())
+    print("Missing from NAS: %d " % m.missing_from_ftp())
+    # TODO : missing from local, total ..
+
+
+    # for i in m.db.find():
+    #     m.add_root_paths(i, FOLDER_PAIRS[0])
