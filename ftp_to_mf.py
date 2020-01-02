@@ -17,7 +17,7 @@ mongo = MongoUtils()
 
 # TODO: create a class with mf and  mondgo instances and move mf_filelist_to_mongo() from Mfconnection.py
 def get_file_names_ftp(ftp_root,db, coll_name):
-    col = db[coll_name]
+    coll = db[coll_name]
 
     ftp = FTPHost.connect(p.private_ftp, user=p.ftp_user, password=p.ftp_password)
     for (dirname, subdirs, files) in ftp.walk(ftp_root):
@@ -63,7 +63,7 @@ def get_one_from_ftp(item, to_path=os.path.join(os.getcwd(), DESTINATION)):
     return path_to
 
 
-def upload_file_to_mf(file_path):
+def upload_file_to_mf_win(file_path):
     print(file_path)
     Kepek = FOLDER_PAIRS[0]['name']
     root = os.path.dirname(file_path)
@@ -108,14 +108,13 @@ def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
                     local_path = get_one_from_ftp(missing)
                     if local_path and keep_downloaded:
                         coll.update_item(missing, {"local_path": local_path})
-                mf = upload_file_to_mf(local_path)
+                mf = upload_file_to_mf_win(local_path)
                 print(mf)
                 coll.update_item(missing, {"mf": mf})
     except Exception as e:
         logging.error(e)
-    finally:
-        cursor.close()
-
+    cursor.close()
+# 2019-12-19 20:03:19,702:ERROR:100: Internal server error (1002)
 def main():
     # TODO: fill rootpaths (call db_handler method?)
     #ftp_filelist_to_mongo()
