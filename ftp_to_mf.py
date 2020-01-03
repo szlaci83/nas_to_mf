@@ -97,12 +97,12 @@ def upload_file_to_mf(file_path):
     to_path = "/" + mf_path
     logging.debug("MF______to_path:  %s" % to_path)
 
-    print("------------------------------------------")
-    print(root)
-    print(name)
-    print(to_path)
-    print(urllib.parse.quote(name))
-    print("------------------------------------------")
+    #print("------------------------------------------")
+    #print(root)
+    #print(name)
+    #print(to_path)
+    #print(urllib.parse.quote(name))
+    #print("------------------------------------------")
 
     result = conn.upload_file(root, name, to_path, urllib.parse.quote(name))
     result["path"] = "mf:" + to_path
