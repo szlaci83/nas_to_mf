@@ -70,7 +70,7 @@ def get_one_from_ftp(item, to_path=os.path.join(os.getcwd(), DESTINATION)):
 
 
 def upload_file_to_mf_win(file_path):
-    # print(file_path)
+    # todo merge the 2 versions' common part
     Kepek = FOLDER_PAIRS[0]['name']
     root = os.path.dirname(file_path)
     name = os.path.basename(file_path)
@@ -88,7 +88,6 @@ def upload_file_to_mf_win(file_path):
 
 
 def upload_file_to_mf(file_path):
-    print(file_path)
     Kepek = FOLDER_PAIRS[0]['name']
     root = os.path.dirname(file_path)
     name = os.path.basename(file_path)
@@ -128,7 +127,7 @@ def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
                     local_path = get_one_from_ftp(missing)
                     if local_path and keep_downloaded:
                         coll.update_item(missing, {"local_path": local_path})
-                mf = upload_file_to_mf(local_path)
+                mf = upload2mf(local_path)
                 mf['updated_at'] = datetime.now()
                 print(mf)
                 coll.update_item(missing, {"mf": mf})
@@ -147,6 +146,8 @@ def main(params):
 
 
 if __name__ == '__main__':
+    upload2mf = upload_file_to_mf if os.name == 'posix' else upload_file_to_mf_win
+
     # TODO: add folderpair etc as params?
     logging.basicConfig(filename="/home/laci/git/nas_to_mf/ftp_to_mf.log", level=logging.DEBUG, format="%(asctime)s:%(levelname)s:%(message)s")
     parser = argparse.ArgumentParser()
