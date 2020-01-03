@@ -155,15 +155,18 @@ def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
             logging.error(e)
 
 
-def main():
-    # Todo: separate processes
+def main(params):
     # Todo: do something with recursive dir
-    ftp_filelist_to_mongo()
-    #mf.mf_filelist_to_mongo()
-    process_missing_in_mf(FOLDER_PAIRS[0]['name'], force_download=True)
+    if params.ftp_update:
+        ftp_filelist_to_mongo()
+    if params.mf_update:
+        mf.mf_filelist_to_mongo()
+    if params.sync_to_mf:
+        process_missing_in_mf(FOLDER_PAIRS[0]['name'], force_download=True)
 
 
 if __name__ == '__main__':
+    # TODO: add folderpair etc as params?
     logging.basicConfig(filename="/home/laci/git/nas_to_mf/ftp_to_mf.log", level=logging.DEBUG, format="%(asctime)s:%(levelname)s:%(message)s")
     parser = argparse.ArgumentParser()
     parser.add_argument("--ftp_update", help="update ftp filelist to Mongo", action="store_true", default=False)
@@ -171,4 +174,4 @@ if __name__ == '__main__':
     parser.add_argument("--sync_to_mf", help="syncing missing files from Mediafire", action="store_true", default=False)
     args = parser.parse_args()
     logging.debug("Params: " + str(args))
-    #main()
+    main(args)
