@@ -13,6 +13,7 @@ import logging
 from utils import ekezettelenit, correct
 from db_handler import MongoUtils
 from datetime import datetime
+import argparse
 
 mongo = MongoUtils()
 
@@ -153,14 +154,21 @@ def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
         except Exception as e:
             logging.error(e)
 
+
 def main():
-    # TODO: fill rootpaths (call db_handler method?)
+    # Todo: separate processes
+    # Todo: do something with recursive dir
     ftp_filelist_to_mongo()
     #mf.mf_filelist_to_mongo()
-    # TODO: set ftp root mf root in mongo here
     process_missing_in_mf(FOLDER_PAIRS[0]['name'], force_download=True)
 
 
 if __name__ == '__main__':
     logging.basicConfig(filename="/home/laci/git/nas_to_mf/ftp_to_mf.log", level=logging.DEBUG, format="%(asctime)s:%(levelname)s:%(message)s")
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ftp_update", help="update ftp filelist to Mongo", action="store_true", default=False)
+    parser.add_argument("--mf_update", help="update Mediafire filelist to Mongo", action="store_true", default=False)
+    parser.add_argument("--sync_to_mf", help="syncing missing files from Mediafire", action="store_true", default=False)
+    args = parser.parse_args()
+    logging.debug("Params: " + str(args))
+    #main()
