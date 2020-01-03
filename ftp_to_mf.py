@@ -76,20 +76,10 @@ def upload_file_to_mf_win(file_path):
     name = os.path.basename(file_path)
     mf_path = os.path.join(Kepek, root.replace(DESTINATION_FULL, ""))
     mf_path = '/' + mf_path
-    # mf_path = root.replace(DESTINATION_FULL, "")
-    # mf_path = mf_path[:mf_path.rfind(os.path.sep)]
-    # mf_path = mf_path.replace("\\", "/")
     conn = mf.MediaFireConnection()
     to_path = mf_path
     logging.debug("MF______to_path:  %s" % to_path)
-    # logging.debug(root, urllib.parse.quote(name), to_path, urllib.parse.quote(name))
-
-    # print("------------------------------------------")
-    # print(root)
-    # print(name)
-    # print(to_path)
-    # print(urllib.parse.quote(name))
-    # print("------------------------------------------")
+    logging.debug(root, urllib.parse.quote(name), to_path, urllib.parse.quote(name))
     logging.info("%s : %s => %s" % (name, root, to_path))
     result = conn.upload_file(root, name, to_path, name)
     logging.info("%s copied" % name)
@@ -103,20 +93,11 @@ def upload_file_to_mf(file_path):
     root = os.path.dirname(file_path)
     name = os.path.basename(file_path)
     mf_path = os.path.join(Kepek, root.replace(DESTINATION_FULL, ""))
-    # mf_path = mf_path[:mf_path.rfind(os.path.sep)]
     mf_path = mf_path.replace("\\", "/")
     conn = mf.MediaFireConnection()
     to_path = "/" + mf_path
     logging.debug("MF______to_path:  %s" % to_path)
-    # logging.debug(root, urllib.parse.quote(name), to_path, urllib.parse.quote(name))
-
-    print("------------------------------------------")
-    print(root)
-    print(name)
-    print(to_path)
-    print(urllib.parse.quote(name))
-    print("------------------------------------------")
-
+    logging.debug(root, urllib.parse.quote(name), to_path, urllib.parse.quote(name))
     result = conn.upload_file(root, name, to_path, urllib.parse.quote(name))
     result["path"] = "mf:" + to_path
     return result
