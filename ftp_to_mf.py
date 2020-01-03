@@ -91,7 +91,8 @@ def upload_file_to_mf(file_path):
     Kepek = FOLDER_PAIRS[0]['name']
     root = os.path.dirname(file_path)
     name = os.path.basename(file_path)
-    mf_path = os.path.join(Kepek, root.replace(DESTINATION_FULL, ""))
+    mf_path = Kepek + root.replace(DESTINATION_FULL, "")
+    logging.debug("REPLACED MFPATH " + mf_path)
     mf_path = mf_path.replace("\\", "/")
     conn = mf.MediaFireConnection()
     to_path = "/" + mf_path
