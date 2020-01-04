@@ -3,7 +3,6 @@ import os
 from settings import  LOGGING_LEVEL, NOT_TO_SYNC, FOLDER_PAIRS,DESTINATION, DESTINATION_FULL
 import MediaFireConnection as mf
 import properties as p
-import logging
 from ftptool import FTPHost
 import shutil
 import urllib
@@ -18,7 +17,7 @@ import argparse
 mongo = MongoUtils()
 
 # TODO: create a class with mf and  mondgo instances and move mf_filelist_to_mongo() from Mfconnection.py
-def get_file_names_ftp(ftp_root, coll_name):
+def get_file_names_ftp(ftp_root, coll_name, force_db_update=False):
    # coll = db[coll_name]
 
     ftp = FTPHost.connect(p.private_ftp, user=p.ftp_user, password=p.ftp_password)
@@ -27,18 +26,19 @@ def get_file_names_ftp(ftp_root, coll_name):
             logging.debug("File: %s" % file)
             file_path = (str(dirname) + '/' + file)
             corrected_filepath = correct(ekezettelenit(file_path).replace("//", "/"))
+            item = {'ftp_path': corrected_filepath, 'original_ftp_path': file_path, 'ftp_root': ftp_root,
+                    'updated_at': datetime.now()}
             existing = mongo.find_by_ftp_path(corrected_filepath, coll_name=coll_name)
-            item = {'ftp_path': corrected_filepath, 'original_ftp_path': file_path, 'ftp_root': ftp_root}
             if existing:
-                # TODO: option with a flag
-                logging.info("already exists!")
-                #logging.debug("updating Mongo")
-                #mongo.update_item(coll_name=coll_name, item=existing, properties=item)
+                logging.info("%s already exists!" % file)
+                if force_db_update:
+                    logging.debug("updating Mongo")
+                    mongo.update_item(coll_name=coll_name, item=existing, properties=item)
+                    logging.debug("Added: %s" % item)
             else:
                 logging.debug("inserting into Mongo")
-                item['updated_at'] = datetime.now()
                 mongo.insert_one(item, coll_name=coll_name)
-            logging.debug("Added: %s" % item)
+                logging.debug("Added: %s" % item)
         logging.debug("Subdirs: %s" % subdirs)
         logging.info("%s done." % dirname)
     return
@@ -46,7 +46,7 @@ def get_file_names_ftp(ftp_root, coll_name):
 
 #TODO: Thumbs.db-t kihagyni
 def get_one_from_ftp(item, to_path=os.path.join(os.getcwd(), DESTINATION)):
-    logging.info("Getting %s from FTP." % item)
+    logging.info("Getting %s from FTP." % item['original_ftp_path'])
     logging.debug(item["_id"])
     from_path = item['original_ftp_path']
     logging.debug("path_from :  %s" % from_path)
@@ -97,14 +97,6 @@ def upload_file_to_mf(file_path):
     conn = mf.MediaFireConnection()
     to_path = "/" + mf_path
     logging.debug("MF______to_path:  %s" % to_path)
-
-    #print("------------------------------------------")
-    #print(root)
-    #print(name)
-    #print(to_path)
-    #print(urllib.parse.quote(name))
-    #print("------------------------------------------")
-
     result = conn.upload_file(root, name, to_path, urllib.parse.quote(name))
     result["path"] = "mf:" + to_path
     return result
@@ -123,24 +115,22 @@ def process_all_coll_missing_in_mf(force_download=False, keep_downloaded=True):
 
 def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
     coll = MongoUtils(coll)
-    cursor = list(coll.missing_from_mf())
-    logging.info(len(cursor))
-   # try:
-    for missing in cursor:
-        try:
-            if not any(missing['ftp_path'].endswith(i) for i in NOT_TO_SYNC):
-                local_path =missing.get('local_path', None)
-                logging.info("local_path: %s" % local_path)
-                if not local_path or force_download:
-                    local_path = get_one_from_ftp(missing)
-                    if local_path and keep_downloaded:
-                        coll.update_item(missing, {"local_path": local_path})
-                mf = upload2mf(local_path)
-                mf['updated_at'] = datetime.now()
-                print(mf)
-                coll.update_item(missing, {"mf": mf})
-        except Exception as e:
-            logging.error(e)
+    missing = coll.missing_from_mf()
+    to_process = [y for y in missing if y not in [x['ftp_path'].endswith(tuple(NOT_TO_SYNC)) for x in missing]]
+    logging.info("Uploading %d files to Mediafire." % len(to_process))
+    # for file in to_process:
+    #     try:
+    #         local_path =file.get('local_path', None)
+    #         logging.info("local_path: %s" % local_path)
+    #         if not local_path or force_download:
+    #             local_path = get_one_from_ftp(file)
+    #             if local_path and keep_downloaded:
+    #                 coll.update_item(file, {"local_path": local_path})
+    #         mf = upload2mf(local_path)
+    #         mf['updated_at'] = datetime.now()
+    #         coll.update_item(file, {"mf": mf})
+    #     except Exception as e:
+    #         logging.error(e)
 
 
 def main(params):
@@ -155,7 +145,6 @@ def main(params):
 
 if __name__ == '__main__':
     upload2mf = upload_file_to_mf if os.name == 'posix' else upload_file_to_mf_win
-
     # TODO: add folderpair etc as params?
     logging.basicConfig(filename="/home/laci/git/nas_to_mf/ftp_to_mf.log", level=logging.DEBUG, format="%(asctime)s:%(levelname)s:%(message)s")
     parser = argparse.ArgumentParser()
