@@ -8,6 +8,7 @@ from mail_repo import create_report_mail
   Service to send invitation and registration e-mails
 '''
 
+
 def _sendmail(to, subject, html, text):
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
@@ -31,6 +32,11 @@ def _sendmail(to, subject, html, text):
 def send_report_mail(to_mail, title, no_of_files, file_list):
     html, text = create_report_mail(title, no_of_files, file_list)
     _sendmail(to_mail, SUBJECT, html, text)
+
+
+def send_report_to_all(file_list):
+    for person in ADDRESSEES:
+        send_report_mail(person, TITLE, len(file_list), file_list)
 
 
 def _example():
