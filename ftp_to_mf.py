@@ -13,6 +13,7 @@ from utils import ekezettelenit, correct
 from db_handler import MongoUtils
 from datetime import datetime
 import argparse
+import mail_service
 
 mongo = MongoUtils()
 
@@ -114,24 +115,26 @@ def process_all_coll_missing_in_mf(force_download=False, keep_downloaded=True):
 
 
 def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
+    done_list = []
     coll = MongoUtils(coll)
-    missing = coll.missing_from_mf()
-    to_process = [y for y in missing if y not in [x['ftp_path'].endswith(tuple(NOT_TO_SYNC)) for x in missing]]
-    logging.info("Uploading %d files to Mediafire." % len(to_process))
-    # for file in to_process:
-    #     try:
-    #         local_path =file.get('local_path', None)
-    #         logging.info("local_path: %s" % local_path)
-    #         if not local_path or force_download:
-    #             local_path = get_one_from_ftp(file)
-    #             if local_path and keep_downloaded:
-    #                 coll.update_item(file, {"local_path": local_path})
-    #         mf = upload2mf(local_path)
-    #         mf['updated_at'] = datetime.now()
-    #         coll.update_item(file, {"mf": mf})
-    #     except Exception as e:
-    #         logging.error(e)
-
+    cursor = list(coll.missing_from_mf())
+    logging.info("Uploading %d files to Mediafire." % len(cursor))
+    for missing in cursor:
+        try:
+            if not any(missing['ftp_path'].endswith(i) for i in NOT_TO_SYNC):
+                local_path =missing.get('local_path', None)
+                logging.info("local_path: %s" % local_path)
+                if not local_path or force_download:
+                    local_path = get_one_from_ftp(missing)
+                    if local_path and keep_downloaded:
+                        coll.update_item(missing, {"local_path": local_path})
+                mf = upload2mf(local_path)
+                mf['updated_at'] = datetime.now()
+                coll.update_item(missing, {"mf": mf})
+                done_list.append(mf['links']['view'])
+        except Exception as e:
+            logging.error(e)
+    return done_list
 
 def main(params):
     # Todo: do something with recursive dir
@@ -140,7 +143,8 @@ def main(params):
     if params.mf_update:
         mf.mf_filelist_to_mongo()
     if params.sync_to_mf:
-        process_missing_in_mf(FOLDER_PAIRS[0]['name'], force_download=True)
+        synced = process_missing_in_mf(FOLDER_PAIRS[0]['name'], force_download=True)
+        mail_service.send_report_mail("szlaci83@gmail.com", "Triton -> MediaFire Sync report", len(synced), synced)
 
 
 if __name__ == '__main__':
