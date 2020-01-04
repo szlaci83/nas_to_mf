@@ -48,7 +48,7 @@ def get_file_names_ftp(ftp_root, coll_name, force_db_update=False):
 #TODO: Thumbs.db-t kihagyni
 def get_one_from_ftp(item, to_path=os.path.join(os.getcwd(), DESTINATION)):
     logging.info("Getting %s from FTP." % item['original_ftp_path'])
-    logging.debug(item["_id"])
+    logging.debug("Mongo object ID: %s " % item["_id"])
     from_path = item['original_ftp_path']
     logging.debug("path_from :  %s" % from_path)
     path_to = from_path.replace(item['ftp_root'], to_path)
@@ -136,6 +136,7 @@ def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
             logging.error(e)
     return done_list
 
+
 def main(params):
     # Todo: do something with recursive dir
     if params.ftp_update:
@@ -144,7 +145,7 @@ def main(params):
         mf.mf_filelist_to_mongo()
     if params.sync_to_mf:
         synced = process_missing_in_mf(FOLDER_PAIRS[0]['name'], force_download=True)
-        mail_service.send_report_mail("szlaci83@gmail.com", "Triton -> MediaFire Sync report", len(synced), synced)
+        mail_service.send_report_to_all(synced)
 
 
 if __name__ == '__main__':
