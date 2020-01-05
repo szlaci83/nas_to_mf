@@ -131,7 +131,7 @@ def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
                 mf = upload2mf(local_path)
                 mf['updated_at'] = datetime.now()
                 coll.update_item(missing, {"mf": mf})
-                done_list.append(mf['links']['view'])
+                done_list.append(mf['links'].get('view', mf['links'].get('default_download', "Couldn't get link")))
         except Exception as e:
             logging.error(e)
     return done_list
