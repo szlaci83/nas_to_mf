@@ -1,6 +1,7 @@
 from utils import ekezettelenit, correct
 from settings import DATABASE_NAME, DATABASE_HOST, FOLDER_PAIRS
 import pymongo
+import datetime
 
 
 class MongoDB:
@@ -74,8 +75,12 @@ class MongoUtils:
         coll = coll_name or self.coll
         self.db[coll].insert_one(record)
 
+    def get_by_mf_mod_date(self, n_days, coll_name=None):
+        coll = coll_name or self.coll
+        return self.db[coll].find({'mf.updated_at' :{"$gt": datetime.datetime.now() - datetime.timedelta(days=n_days)}}, no_cursor_timeout=True)
 
-if __name__ == '__main__':
+def info():
+
     # TODO: get name from param
     m = MongoUtils("Kepek")
     print("Using host: %s, db: %s, collection: %s" % (m.host,  m.db_name, m.coll))
@@ -89,3 +94,10 @@ if __name__ == '__main__':
 
     for i in m.db['Kepek'].find():
         m.add_root_paths(i, FOLDER_PAIRS[0])
+
+
+if __name__ == '__main__':
+    m = MongoUtils('Kepek')
+    g = m.get_by_mf_mod_date(1)
+    for item in g:
+        m.update_item(item, {'mf': None})
