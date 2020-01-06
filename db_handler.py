@@ -98,6 +98,8 @@ def info():
 
 if __name__ == '__main__':
     m = MongoUtils('Kepek')
-    g = m.get_by_mf_mod_date(1)
-    for item in g:
+    to_reset = m.get_by_mf_mod_date(1)
+    print(len(list(m.missing_from_mf())))
+    for item in to_reset:
         m.update_item(item, {'mf': None})
+    print(len(list(m.missing_from_mf())))
