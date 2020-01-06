@@ -7,7 +7,7 @@ DATABASE_HOST = "192.168.0.150"
 DATABASE_NAME = "sync"
 
 #LOCAL_ROOT = "C:\\Users\\Laszlo.Szoboszlai\\Documents\\personal\\git\\nas_to_mf\\"
-LOCAL_ROOT = "/home/laci/git/nas_to_mf/"
+LOCAL_ROOT = os.getcwd()
 DESTINATION = 'downloads/'
 DESTINATION_FULL = os.path.join(LOCAL_ROOT, DESTINATION)
 Kepek = "Kepek"

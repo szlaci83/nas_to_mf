@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os
-from settings import  LOGGING_LEVEL, NOT_TO_SYNC, FOLDER_PAIRS,DESTINATION, DESTINATION_FULL
+from settings import  LOGGING_LEVEL, NOT_TO_SYNC, FOLDER_PAIRS,DESTINATION_FULL
 import MediaFireConnection as mf
 import properties as p
 from ftptool import FTPHost
@@ -46,7 +46,9 @@ def get_file_names_ftp(ftp_root, coll_name, force_db_update=False):
 
 
 #TODO: Thumbs.db-t kihagyni
-def get_one_from_ftp(item, to_path=os.path.join(os.getcwd(), DESTINATION)):
+# os.getcwd miatt elbaszodik az ftp path es /home/laci/ lesz belole ha cronnal megy
+# na ez elbassza utana a foldereket Mediafiren is !!!!!!!!!!!!!!!!!!!!
+def get_one_from_ftp(item, to_path=DESTINATION_FULL):
     logging.info("Getting %s from FTP." % item['original_ftp_path'])
     logging.debug("Mongo object ID: %s " % item["_id"])
     from_path = item['original_ftp_path']
@@ -89,6 +91,7 @@ def upload_file_to_mf_win(file_path):
 
 
 def upload_file_to_mf(file_path):
+    # 'mf:/Kepek/home/laci/downloads/juci telo/cache/latest',
     Kepek = FOLDER_PAIRS[0]['name']
     root = os.path.dirname(file_path)
     name = os.path.basename(file_path)
