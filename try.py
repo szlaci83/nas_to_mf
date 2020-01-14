@@ -17,12 +17,3 @@ for i in range(11):
 #print(pic)
 
 
-
-# import ftplib
-# ftplib.FTP_PORT = 12345
-# session = ftplib.FTP(host="192.168.0.243")
-# session.login("laci","krowka")
-# file = open('pics\\test0.jpg','rb')                  # file to send
-# session.storbinary('STOR test0.jpg', file)     # send the file
-# file.close()                                    # close file and FTP
-# session.quit()
