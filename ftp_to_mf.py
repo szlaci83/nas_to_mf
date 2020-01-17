@@ -120,7 +120,9 @@ def process_all_coll_missing_in_mf(force_download=False, keep_downloaded=True):
 def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
     done_list = []
     coll = MongoUtils(coll)
-    cursor = list(coll.missing_from_mf())
+    # TODO: add option
+    #cursor = list(coll.missing_from_mf())
+    cursor = list(coll.missing_from_local())
     logging.info("Uploading %d files to Mediafire." % len(cursor))
     for missing in cursor:
         try:
