@@ -4,6 +4,8 @@ properties.py
 email_properties.py
 .idea/workspace.xml
 nohup.out
+env.sh
+log/
 
 *.txt
 *.txtdups
