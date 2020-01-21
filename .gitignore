@@ -6,6 +6,7 @@ email_properties.py
 nohup.out
 env.sh
 log/
+thumb/
 
 *.txt
 *.txtdups
