@@ -138,8 +138,8 @@ def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
                # coll.update_item(missing, {"mf": mf})
                # link = mf['links'].get('view', mf['links'].get('normal_download', "Couldn't get link"))
                # logging.info("%s Done on MF" % mf['path'])
-               # done_list.append(link)
-                done_list.append(local_path)
+                done_list.append(link)
+               # done_list.append(local_path)
         except Exception as e:
             logging.error(e)
     return done_list
