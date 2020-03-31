@@ -17,10 +17,9 @@ import mail_service
 
 mongo = MongoUtils()
 
+
 # TODO: create a class with mf and  mondgo instances and move mf_filelist_to_mongo() from Mfconnection.py
 def get_file_names_ftp(ftp_root, coll_name, force_db_update=False):
-   # coll = db[coll_name]
-
     ftp = FTPHost.connect(p.private_ftp, user=p.ftp_user, password=p.ftp_password)
     for (dirname, subdirs, files) in ftp.walk(ftp_root):
         for file in files:
@@ -72,12 +71,12 @@ def get_one_from_ftp(item, to_path=DESTINATION_FULL):
     return path_to
 
 
-def upload_file_to_mf_win(file_path):
+def upload_file_to_mf_win(file_path, folder_name):
     # todo merge the 2 versions' common part
-    Kepek = FOLDER_PAIRS[0]['name']
+    # Kepek = FOLDER_PAIRS[0]['name']
     root = os.path.dirname(file_path)
     name = os.path.basename(file_path)
-    mf_path = os.path.join(Kepek, root.replace(DESTINATION_FULL, ""))
+    mf_path = os.path.join(folder_name, root.replace(DESTINATION_FULL, ""))
     mf_path = '/' + mf_path
     conn = mf.MediaFireConnection()
     to_path = mf_path
@@ -90,12 +89,12 @@ def upload_file_to_mf_win(file_path):
     return result
 
 
-def upload_file_to_mf(file_path):
+def upload_file_to_mf(file_path, folder_name):
     # 'mf:/Kepek/home/laci/downloads/juci telo/cache/latest',
-    Kepek = FOLDER_PAIRS[0]['name']
+    # Kepek = FOLDER_PAIRS[0]['name']
     root = os.path.dirname(file_path)
     name = os.path.basename(file_path)
-    mf_path = Kepek + "/" + root.replace(DESTINATION_FULL, "")
+    mf_path = folder_name + "/" + root.replace(DESTINATION_FULL, "")
     logging.debug("REPLACED MFPATH " + mf_path)
     mf_path = mf_path.replace("\\", "/")
     conn = mf.MediaFireConnection()
@@ -117,9 +116,9 @@ def process_all_coll_missing_in_mf(force_download=False, keep_downloaded=True):
         process_missing_in_mf(folder_pair['name'], force_download, keep_downloaded)
 
 
-def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
+def process_missing_in_mf(folder_name, force_download=False, keep_downloaded=True):
     done_list = []
-    coll = MongoUtils(coll)
+    coll = MongoUtils(folder_name)
     cursor = list(coll.missing_from_mf())
     logging.info("Uploading %d files to Mediafire." % len(cursor))
     for missing in cursor:
@@ -131,7 +130,7 @@ def process_missing_in_mf(coll, force_download=False, keep_downloaded=True):
                     local_path = get_one_from_ftp(missing)
                     if local_path and keep_downloaded:
                         coll.update_item(missing, {"local_path": local_path})
-                mf = upload2mf(local_path)
+                mf = upload2mf(local_path, folder_name)
                 mf['updated_at'] = datetime.now()
                 coll.update_item(missing, {"mf": mf})
                 link = mf['links'].get('view', mf['links'].get('normal_download', "Couldn't get link"))
