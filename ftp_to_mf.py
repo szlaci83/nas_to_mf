@@ -129,6 +129,7 @@ def process_missing_in_mf(folder_name, force_download=False, keep_downloaded=Tru
                 if not local_path or force_download:
                     local_path = get_one_from_ftp(missing)
                     if local_path and keep_downloaded:
+                        # TODO: remove downloaded otherwise
                         coll.update_item(missing, {"local_path": local_path})
                 mf = upload2mf(local_path, folder_name)
                 mf['updated_at'] = datetime.now()
@@ -147,8 +148,11 @@ def main(params):
         ftp_filelist_to_mongo()
     if params.mf_update:
         mf.mf_filelist_to_mongo()
-    if params.sync_to_mf:
+    if params.pics_sync_to_mf:
         synced = process_missing_in_mf(FOLDER_PAIRS[0]['name'], force_download=True)
+        mail_service.send_report_to_all(synced)
+    if params.video_sync_to_mf:
+        synced = process_missing_in_mf(FOLDER_PAIRS[1]['name'], force_download=True)
         mail_service.send_report_to_all(synced)
 
 
@@ -159,7 +163,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--ftp_update", help="update ftp filelist to Mongo", action="store_true", default=False)
     parser.add_argument("--mf_update", help="update Mediafire filelist to Mongo", action="store_true", default=False)
-    parser.add_argument("--sync_to_mf", help="syncing missing files from Mediafire", action="store_true", default=False)
+    parser.add_argument("--pics_sync_to_mf", help="syncing missing pictures from Mediafire", action="store_true", default=False)
+    parser.add_argument("--video_sync_to_mf", help="syncing missing videos from Mediafire", action="store_true", default=False)
     args = parser.parse_args()
     logging.debug("Params: " + str(args))
     main(args)
