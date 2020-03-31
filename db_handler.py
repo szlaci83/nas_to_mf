@@ -80,7 +80,6 @@ class MongoUtils:
         return self.db[coll].find({'mf.updated_at' :{"$gt": datetime.datetime.now() - datetime.timedelta(days=n_days)}}, no_cursor_timeout=True)
 
 def info():
-
     # TODO: get name from param
     m = MongoUtils("Kepek")
     print("Using host: %s, db: %s, collection: %s" % (m.host,  m.db_name, m.coll))
@@ -97,9 +96,13 @@ def info():
 
 
 if __name__ == '__main__':
-    m = MongoUtils('Kepek')
-    to_reset = m.get_by_mf_mod_date(1)
-    print(len(list(m.missing_from_mf())))
-    for item in to_reset:
-        m.update_item(item, {'mf': None})
-    print(len(list(m.missing_from_mf())))
+    m = MongoUtils("Kamera")
+    for i in m.db['Kamera'].find():
+        m.add_root_paths(i, FOLDER_PAIRS[1])
+
+    #m = MongoUtils('Kepek')
+    #to_reset = m.get_by_mf_mod_date(1)
+    #print(len(list(m.missing_from_mf())))
+    #for item in to_reset:
+    #    m.update_item(item, {'mf': None})
+    #print(len(list(m.missing_from_mf())))
