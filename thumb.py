@@ -24,18 +24,21 @@ def process_all(source, dest, func):
 
 
 def create_thumb(source_img, dest_img):
-    im = Image.open(source_img)
-    w, h = im.size
-    width, height = get_thumb_size(w, h)
-    logging.info("Resizing %s  -> %s, size: [%d * %d] -> [%d * %d]", source_img, dest_img, w, h, width, height)
-    thumb = im.resize((width, height))
-    thumb.save(dest_img)
-
+    try:
+        im = Image.open(source_img)
+        w, h = im.size
+        width, height = get_thumb_size(w, h)
+        logging.info("Resizing %s  -> %s, size: [%d * %d] -> [%d * %d]", source_img, dest_img, w, h, width, height)
+        thumb = im.resize((width, height))
+        thumb = thumb.convert('RGB')
+        thumb.save(dest_img)
+    except  Exception as e:
+        logging.error(e)
 
 if __name__ == '__main__':
     s_path = "/home/laci/git/nas_to_mf/downloads/"
-    thumb_path = "/home/laci/git/nas_to_mf/thumb"
-
-    logging.basicConfig(filename="/home/laci/git/nas_to_mf/thumb.log", level=logging.DEBUG,
+    thumb_path = "/home/laci/git/nas_to_mf/thumb/"
+    logfile = "/home/laci/git/nas_to_mf/log/"	
+    logging.basicConfig(filename="", level=logging.DEBUG,
                         format="%(asctime)s:%(levelname)s:%(message)s")
     process_all(s_path, thumb_path, create_thumb)
