@@ -90,10 +90,10 @@ def copy_without_spec_chars(source, dest):
         if not os.path.exists(dest_root):
             os.makedirs(dest_root)
         for file in files:
-            shutil.copyfileobj(
-                 os.path.join(root,  file),
-                 os.path.join(ultimate_replacer(dest_root), ultimate_replacer(file))
-                 )
+            s = os.path.join(root,file)
+            d = os.path.join(ultimate_replacer(dest_root), ultimate_replacer(file))
+            print("%s => %s")
+            shutil.copyfileobj(s,d)
 
 
 if __name__ == '__main__':
