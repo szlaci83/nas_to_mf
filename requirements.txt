@@ -1,5 +1,5 @@
 ftptool==0.7.1
--e git+http://github.com/szlaci83/mediafire-python-open-sdk.git@3f129a0149d8fea50f77016da781b3ba61364d61#egg=mediafire
+-e git+http://github.com/szlaci83/mediafire-python-open-sdk.git@fix_res_up#egg=mediafire
 Pillow==7.0.0
 pymongo==3.10.0
 requests==2.11.1
