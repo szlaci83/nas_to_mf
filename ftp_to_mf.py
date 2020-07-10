@@ -67,7 +67,7 @@ def get_one_from_ftp(item, to_path=DESTINATION_FULL):
     except urllib.error.URLError:
         logging.error(from_path)
         return False
-    logging.info("%s DONE" % from_path)
+    logging.info("%s DONE" % path_to)
     return path_to
 
 
@@ -159,7 +159,7 @@ def main(params):
 if __name__ == '__main__':
     upload2mf = upload_file_to_mf if os.name == 'posix' else upload_file_to_mf_win
     # TODO: add folderpair etc as params?
-    logging.basicConfig(filename="/home/laci/git/nas_to_mf/log/ftp_to_mf.log", level=logging.ERROR, format="%(asctime)s:%(levelname)s:%(message)s")
+    logging.basicConfig(filename="/home/laci/live/nas_to_mf/log/nas_2_mf_error.log", level=logging.ERROR, format="%(asctime)s:%(levelname)s:%(message)s")
     parser = argparse.ArgumentParser()
     parser.add_argument("--ftp_update", help="update ftp filelist to Mongo", action="store_true", default=False)
     parser.add_argument("--mf_update", help="update Mediafire filelist to Mongo", action="store_true", default=False)

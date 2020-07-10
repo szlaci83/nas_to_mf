@@ -34,6 +34,11 @@ class MongoUtils:
         self.db = self.conn[self.db_name]
         self.coll = coll_name
 
+    def get_all(self, coll_name=None):
+        coll = coll_name or self.coll
+        return self.db[coll].find()
+
+
     def add_root_paths(self, item, folder_pair,  coll_name=None):
         coll = coll_name or self.coll
         self.db[coll].update_one({"_id": item["_id"]}, {"$set": {"mf_root": folder_pair['mf'], 'ftp_root': folder_pair['ftp']}})
@@ -96,9 +101,23 @@ def info():
 
 
 if __name__ == '__main__':
-    m = MongoUtils("Kamera")
-    for i in m.db['Kamera'].find():
-        m.add_root_paths(i, FOLDER_PAIRS[1])
+    import os
+    m = MongoUtils("Kepek")
+    missing = list(m.missing_from_mf())
+    for m in missing:
+        if m['ftp_path'].find('Thunms.db') != -1:
+            print(m['ftp_path'])
+    #for i in m.db['Kamera'].find():
+    #    m.add_root_paths(i, FOLDER_PAIRS[1])
+    #all = m.get_all()
+    #u = 0 
+    #for i in all:
+    #    p = "/media/local/sda3" + i.get("original_ftp_path", "No FTP path")
+    #    if not os.path.exists(p):
+    #        print(i.get("mf", {}).get("path"))
+    #        u += 1
+    #print(u)
+
 
     #m = MongoUtils('Kepek')
     #to_reset = m.get_by_mf_mod_date(1)

@@ -8,8 +8,10 @@ DATABASE_NAME = "sync"
 
 #LOCAL_ROOT = "C:\\Users\\Laszlo.Szoboszlai\\Documents\\personal\\git\\nas_to_mf\\"
 LOCAL_ROOT = os.getcwd()
-DESTINATION = 'downloads/'
-DESTINATION_FULL = os.path.join(LOCAL_ROOT, DESTINATION)
+#DESTINATION = 'downloads/'
+#DESTINATION_FULL = os.path.join(LOCAL_ROOT, DESTINATION)
+DESTINATION_FULL = '/media/local/sda3/HomeMade/Kepek/'
+
 Kepek = "Kepek"
 
 LOGGING_LEVEL = logging.DEBUG
