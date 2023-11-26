@@ -1,15 +1,17 @@
 import logging
 import os
 
-NOT_TO_SYNC = ["Thumbs.db"]
+NOT_TO_SYNC = ["Thumbs.db", ".thumbnail", "tacitpart"]
 
-DATABASE_HOST = "192.168.0.150"
+DATABASE_HOST = "localhost"
 DATABASE_NAME = "sync"
 
 #LOCAL_ROOT = "C:\\Users\\Laszlo.Szoboszlai\\Documents\\personal\\git\\nas_to_mf\\"
 LOCAL_ROOT = os.getcwd()
-DESTINATION = 'downloads/'
-DESTINATION_FULL = os.path.join(LOCAL_ROOT, DESTINATION)
+#DESTINATION = 'downloads/'
+#DESTINATION_FULL = os.path.join(LOCAL_ROOT, DESTINATION)
+DESTINATION_FULL = '/media/local/sda3/HomeMade/Kamera/'
+
 Kepek = "Kepek"
 
 LOGGING_LEVEL = logging.DEBUG
