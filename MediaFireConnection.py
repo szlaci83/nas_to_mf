@@ -1,5 +1,5 @@
 from mediafire import (MediaFireApi, MediaFireUploader)
-import properties
+import properties_example as properties
 import os
 import logging
 from mediafire.client import (MediaFireClient,File,
