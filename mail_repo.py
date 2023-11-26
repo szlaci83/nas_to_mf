@@ -5,8 +5,8 @@
 
 def add_list_items(body, text, file_list):
     for item in file_list:
-        body += "<p>%s<p>" % item
-        text += item + "\n"
+        body += "<p>%s<p>" % str(item)
+        text += str(item) + "\n"
     body += "</body>\n</html>"
     return body, text
 

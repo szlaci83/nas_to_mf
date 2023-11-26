@@ -63,6 +63,10 @@ class MongoUtils:
         coll = coll_name or self.coll
         return self.db[coll].find({"mf": {"$eq": None}, "ftp_path": {"$ne": None}}, no_cursor_timeout=True)
 
+    def missing_from_local(self, coll_name=None):
+        coll = coll_name or self.coll
+        return self.db[coll].find({"local_path": {"$eq": None}, "ftp_path": {"$ne": None}}, no_cursor_timeout=True)
+
     def update_item(self, item, properties, coll_name=None):
         coll = coll_name or self.coll
         self.db[coll].update_one({"_id": item["_id"]}, {"$set": properties})

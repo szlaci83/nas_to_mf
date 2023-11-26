@@ -121,25 +121,29 @@ def process_all_coll_missing_in_mf(force_download=False, keep_downloaded=True):
 
 def process_missing_in_mf(folder_name, force_download=False, keep_downloaded=True):
     done_list = []
-    coll = MongoUtils(folder_name)
-    cursor = list(coll.missing_from_mf())
-    logging.info("Uploading %d files to Mediafire." % len(cursor))
+
+    coll = MongoUtils(coll)
+    # TODO: add option
+    #cursor = list(coll.missing_from_mf())
+    cursor = list(coll.missing_from_local())
+    #logging.info("Uploading %d files to Mediafire." % len(cursor))
     for missing in cursor:
         try:
             if not any(missing['ftp_path'].endswith(i) for i in NOT_TO_SYNC):
-                local_path =missing.get('local_path', None)
+                local_path = missing.get('local_path', None)
                 logging.info("local_path: %s" % local_path)
                 if not local_path or force_download:
                     local_path = get_one_from_ftp(missing)
                     if local_path and keep_downloaded:
                         # TODO: remove downloaded otherwise
                         coll.update_item(missing, {"local_path": local_path})
-                mf = upload2mf(local_path, folder_name)
-                mf['updated_at'] = datetime.now()
-                coll.update_item(missing, {"mf": mf})
-                link = mf['links'].get('view', mf['links'].get('normal_download', "Couldn't get link"))
-                logging.info("%s Done on MF" % mf['path'])
+               # mf = upload2mf(local_path)
+               # mf['updated_at'] = datetime.now()
+               # coll.update_item(missing, {"mf": mf})
+               # link = mf['links'].get('view', mf['links'].get('normal_download', "Couldn't get link"))
+               # logging.info("%s Done on MF" % mf['path'])
                 done_list.append(link)
+               # done_list.append(local_path)
         except Exception as e:
             logging.error(e)
     return done_list
