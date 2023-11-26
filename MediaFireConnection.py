@@ -119,6 +119,6 @@ def mf_filelist_to_mongo():
 if __name__ == '__main__':
     logging.basicConfig(filename="", level=logging.DEBUG, format="%(asctime)s:%(levelname)s:%(message)s")
    # mf_filelist_to_mongo()
-    mf=MediaFireConnection(email='szlaci83@gmail.com', password='Krowka1983')
+    mf=MediaFireConnection(email=properties.email, password=properties.password )
     print(mf.get_info())
 
