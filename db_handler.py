@@ -80,6 +80,10 @@ class MongoUtils:
         coll = coll_name or self.coll
         return self.db[coll].find_one({'ftp_path': corrected_filepath})
 
+    def find_by_local_path(self, corrected_filepath, coll_name=None):
+        coll = coll_name or self.coll
+        return self.db[coll].find_one({'local_path': corrected_filepath})
+
     def insert_one(self, record, coll_name=None):
         coll = coll_name or self.coll
         self.db[coll].insert_one(record)
@@ -89,6 +93,7 @@ class MongoUtils:
         return self.db[coll].find({'mf.updated_at' :{"$gt": datetime.datetime.now() - datetime.timedelta(days=n_days)}}, no_cursor_timeout=True)
 
 def info():
+
     # TODO: get name from param
     m = MongoUtils("Kepek")
     print("Using host: %s, db: %s, collection: %s" % (m.host,  m.db_name, m.coll))
@@ -105,29 +110,9 @@ def info():
 
 
 if __name__ == '__main__':
-#    import os
-    m = MongoUtils("Kamera")
-#    m.correct_ftp_path('original_ftp_path', delete_none=False) 
-    
-    #missing = list(m.missing_from_mf())
-    #for m in missing:
-    #    if m['ftp_path'].find('Thunms.db') != -1:
-    #        print(m['ftp_path'])
-    #for i in m.db['Kamera'].find():
-    #    m.add_root_paths(i, FOLDER_PAIRS[1])
-    #all = m.get_all()
-    #u = 0 
-    #for i in all:
-    #    p = "/media/local/sda3" + i.get("original_ftp_path", "No FTP path")
-    #    if not os.path.exists(p):
-    #        print(i.get("mf", {}).get("path"))
-    #        u += 1
-    #print(u)
-
-
-    #m = MongoUtils('Kepek')
-    #to_reset = m.get_by_mf_mod_date(1)
-    #print(len(list(m.missing_from_mf())))
-    #for item in to_reset:
-    #    m.update_item(item, {'mf': None})
-    #print(len(list(m.missing_from_mf())))
+    m = MongoUtils('Kepek')
+    to_reset = m.get_by_mf_mod_date(1)
+    print(len(list(m.missing_from_mf())))
+    for item in to_reset:
+        m.update_item(item, {'mf': None})
+    print(len(list(m.missing_from_mf())))

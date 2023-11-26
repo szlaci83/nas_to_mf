@@ -17,12 +17,10 @@ import mail_service
 
 mongo = MongoUtils()
 
-
 # TODO: create a class with mf and  mondgo instances and move mf_filelist_to_mongo() from Mfconnection.py
 def get_file_names_ftp(ftp_root, coll_name, force_db_update=False):
-    print(p.private_ftp)
-    print(p.ftp_user)
-    print(p.ftp_password)
+   # coll = db[coll_name]
+
     ftp = FTPHost.connect(p.private_ftp, user=p.ftp_user, password=p.ftp_password)
     for (dirname, subdirs, files) in ftp.walk(ftp_root):
         for file in files:
@@ -46,6 +44,28 @@ def get_file_names_ftp(ftp_root, coll_name, force_db_update=False):
         logging.info("%s done." % dirname)
     return
 
+def get_file_names_local(local_root, coll_name, force_db_update=False):
+    for (dirname, subdirs, files) in os.walk(local_root):
+        for file in files:
+            logging.debug("File: %s" % file)
+            file_path = (str(dirname) + '/' + file)
+            corrected_filepath = correct(ekezettelenit(file_path).replace("//", "/")).replace("local/sda3/", "")
+            item = {'ftp_path': corrected_filepath, 'original_ftp_path': file_path, 'ftp_root': local_root,
+                    'updated_at': datetime.now()}
+            existing = mongo.find_by_local_path(corrected_filepath, coll_name=coll_name)
+            if existing:
+                logging.info("%s already exists!" % corrected_filepath)
+                if force_db_update:
+                    logging.debug("updating Mongo")
+                    mongo.update_item(coll_name=coll_name, item=existing, properties=item)
+                    logging.debug("Added: %s" % item)
+            else:
+                logging.debug("inserting into Mongo")
+               # mongo.insert_one(item, coll_name=coll_name)
+                logging.debug("Added: %s" % item)
+        logging.debug("Subdirs: %s" % subdirs)
+        logging.info("%s done." % dirname)
+    return
 
 #TODO: Thumbs.db-t kihagyni
 # os.getcwd miatt elbaszodik az ftp path es /home/laci/ lesz belole ha cronnal megy
@@ -70,7 +90,7 @@ def get_one_from_ftp(item, to_path=DESTINATION_FULL):
     except urllib.error.URLError:
         logging.error(from_path)
         return False
-    logging.info("%s DONE" % path_to)
+    logging.info("%s DONE" % from_path)
     return path_to
 
 
@@ -151,28 +171,23 @@ def process_missing_in_mf(folder_name, force_download=False, keep_downloaded=Tru
 
 def main(params):
     # Todo: do something with recursive dir
-    if params.ftp_update:
-        ftp_filelist_to_mongo()
-    if params.mf_update:
-        mf.mf_filelist_to_mongo()
-    if params.pics_sync_to_mf:
-        synced = process_missing_in_mf(FOLDER_PAIRS[0]['name'], force_download=True)
-        mail_service.send_report_to_all(synced)
-    if params.video_sync_to_mf:
-        synced = process_missing_in_mf(FOLDER_PAIRS[1]['name'], force_download=True)
-        mail_service.send_report_to_all(synced)
+    # if params.ftp_update:
+    ftp_filelist_to_mongo()
+    # if params.mf_update:
+    #     mf.mf_filelist_to_mongo()
+    # if params.sync_to_mf:
+    #     synced = process_missing_in_mf(FOLDER_PAIRS[0]['name'], force_download=True)
+    #     mail_service.send_report_to_all(synced)
 
 
-if __name__ == '__main__':
-    upload2mf = upload_file_to_mf if os.name == 'posix' else upload_file_to_mf_win
-    # TODO: add folderpair etc as params?
-    logfile = '/home/laci/live/nas_to_mf/log/nas2mf.log'
-    logging.basicConfig(filename="", level=logging.INFO, format="%(asctime)s:%(levelname)s:%(message)s")
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--ftp_update", help="update ftp filelist to Mongo", action="store_true", default=False)
-    parser.add_argument("--mf_update", help="update Mediafire filelist to Mongo", action="store_true", default=False)
-    parser.add_argument("--pics_sync_to_mf", help="syncing missing pictures from Mediafire", action="store_true", default=False)
-    parser.add_argument("--video_sync_to_mf", help="syncing missing videos from Mediafire", action="store_true", default=False)
-    args = parser.parse_args()
-    logging.debug("Params: " + str(args))
-    main(args)
+# if __name__ == '__main__':
+#     upload2mf = upload_file_to_mf if os.name == 'posix' else upload_file_to_mf_win
+#     # TODO: add folderpair etc as params?
+#     logging.basicConfig(filename="/home/laci/git/nas_to_mf/ftp_to_mf.log", level=logging.DEBUG, format="%(asctime)s:%(levelname)s:%(message)s")
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument("--ftp_update", help="update ftp filelist to Mongo", action="store_true", default=False)
+#     parser.add_argument("--mf_update", help="update Mediafire filelist to Mongo", action="store_true", default=False)
+#     parser.add_argument("--sync_to_mf", help="syncing missing files from Mediafire", action="store_true", default=False)
+#     args = parser.parse_args()
+#     logging.debug("Params: " + str(args))
+#     main(args)
