@@ -20,6 +20,9 @@ mongo = MongoUtils()
 
 # TODO: create a class with mf and  mondgo instances and move mf_filelist_to_mongo() from Mfconnection.py
 def get_file_names_ftp(ftp_root, coll_name, force_db_update=False):
+    print(p.private_ftp)
+    print(p.ftp_user)
+    print(p.ftp_password)
     ftp = FTPHost.connect(p.private_ftp, user=p.ftp_user, password=p.ftp_password)
     for (dirname, subdirs, files) in ftp.walk(ftp_root):
         for file in files:
@@ -159,7 +162,8 @@ def main(params):
 if __name__ == '__main__':
     upload2mf = upload_file_to_mf if os.name == 'posix' else upload_file_to_mf_win
     # TODO: add folderpair etc as params?
-    logging.basicConfig(filename="/home/laci/live/nas_to_mf/log/nas_2_mf_error.log", level=logging.ERROR, format="%(asctime)s:%(levelname)s:%(message)s")
+    logfile = '/home/laci/live/nas_to_mf/log/nas2mf.log'
+    logging.basicConfig(filename="", level=logging.INFO, format="%(asctime)s:%(levelname)s:%(message)s")
     parser = argparse.ArgumentParser()
     parser.add_argument("--ftp_update", help="update ftp filelist to Mongo", action="store_true", default=False)
     parser.add_argument("--mf_update", help="update Mediafire filelist to Mongo", action="store_true", default=False)

@@ -21,8 +21,8 @@ class MediaFireConnection:
         self.uploader = MediaFireUploader(self.__api)
         self.client = MediaFireClient()
         self.client.login(email=email,
-                                                  password=password,
-                                                  app_id=app_id)
+                          password=password,
+                          app_id=app_id)
         self.ROOT = ROOT
 
     def get_info(self):
@@ -118,5 +118,7 @@ def mf_filelist_to_mongo():
 
 if __name__ == '__main__':
     logging.basicConfig(filename="", level=logging.DEBUG, format="%(asctime)s:%(levelname)s:%(message)s")
-    mf_filelist_to_mongo()
+   # mf_filelist_to_mongo()
+    mf=MediaFireConnection(email='szlaci83@gmail.com', password='Krowka1983')
+    print(mf.get_info())
 

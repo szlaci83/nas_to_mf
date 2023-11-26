@@ -1,8 +1,8 @@
+from utils import ultimate_replacer
 from utils import ekezettelenit, correct
 from settings import DATABASE_NAME, DATABASE_HOST, FOLDER_PAIRS
 import pymongo
 import datetime
-
 
 class MongoDB:
     class __impl:
@@ -47,7 +47,7 @@ class MongoUtils:
         coll = coll_name or self.coll
         for item in self.db[coll].find():
             try:
-                corrected = ekezettelenit(correct(item[to_correct]))
+                corrected = ultimate_replacer(item[to_correct])
                 if item[to_correct] != corrected:
                     print(corrected)
                     self.db[coll].update_one({"_id": item["_id"]}, {"$set": {to_correct: corrected}})
@@ -101,12 +101,14 @@ def info():
 
 
 if __name__ == '__main__':
-    import os
-    m = MongoUtils("Kepek")
-    missing = list(m.missing_from_mf())
-    for m in missing:
-        if m['ftp_path'].find('Thunms.db') != -1:
-            print(m['ftp_path'])
+#    import os
+    m = MongoUtils("Kamera")
+#    m.correct_ftp_path('original_ftp_path', delete_none=False) 
+    
+    #missing = list(m.missing_from_mf())
+    #for m in missing:
+    #    if m['ftp_path'].find('Thunms.db') != -1:
+    #        print(m['ftp_path'])
     #for i in m.db['Kamera'].find():
     #    m.add_root_paths(i, FOLDER_PAIRS[1])
     #all = m.get_all()

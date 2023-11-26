@@ -19,10 +19,10 @@ def create_report_mail(title, no_of_files, file_list):
 
 
 def _get_from_template(template_name):
-    with open('/home/laci/git/nas_to_mf/templates/' + template_name + '.html', 'r') as html_file:
+    with open('templates/' + template_name + '.html', 'r') as html_file:
         body = html_file.read().replace("\n", "")
 
-    with open('/home/laci/git/nas_to_mf/templates/' + template_name + '.txt', 'r') as text_file:
+    with open('templates/' + template_name + '.txt', 'r') as text_file:
         text = text_file.read()
     return body, text
 
